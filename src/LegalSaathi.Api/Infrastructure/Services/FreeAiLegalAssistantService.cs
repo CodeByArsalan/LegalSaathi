@@ -51,20 +51,40 @@ public class FreeAiLegalAssistantService : IAiLegalAssistantService
 
         // Try external free API if configured with a real key, otherwise utilize intelligent local legal reasoning engine
         var externalApiUrl = _configuration["AiSettings:ApiUrl"];
-        var externalApiKey = _configuration["AiSettings:ApiKey"];
+        var externalApiKey = _configuration["AiSettings:ApiKey"]?.Trim();
+        var configuredModel = _configuration["AiSettings:Model"]?.Trim();
 
-        if (!string.IsNullOrWhiteSpace(externalApiUrl) && 
-            !string.IsNullOrWhiteSpace(externalApiKey) && 
+        // Auto-detect provider if URL is not explicitly configured
+        if (!string.IsNullOrWhiteSpace(externalApiKey) && 
             !externalApiKey.Contains("placeholder", StringComparison.OrdinalIgnoreCase))
         {
+            if (string.IsNullOrWhiteSpace(externalApiUrl))
+            {
+                if (externalApiKey.StartsWith("gsk_", StringComparison.OrdinalIgnoreCase))
+                {
+                    externalApiUrl = "https://api.groq.com/openai/v1/chat/completions";
+                    configuredModel = string.IsNullOrWhiteSpace(configuredModel) ? "llama-3.3-70b-versatile" : configuredModel;
+                }
+                else if (externalApiKey.StartsWith("sk-or-", StringComparison.OrdinalIgnoreCase))
+                {
+                    externalApiUrl = "https://openrouter.ai/api/v1/chat/completions";
+                    configuredModel = string.IsNullOrWhiteSpace(configuredModel) ? "meta-llama/llama-3.3-70b-instruct:free" : configuredModel;
+                }
+                else
+                {
+                    externalApiUrl = "https://openrouter.ai/api/v1/chat/completions";
+                }
+            }
+
             try
             {
-                answer = await CallExternalFreeLlmAsync(externalApiUrl, externalApiKey, prompt, lang, request.FormContextJson, cancellationToken);
-                modelUsed = "Meta-Llama-3-Free-Inference";
+                var effectiveModel = !string.IsNullOrWhiteSpace(configuredModel) ? configuredModel : "meta-llama/llama-3.3-70b-instruct:free";
+                answer = await CallExternalFreeLlmAsync(externalApiUrl, externalApiKey, effectiveModel, prompt, lang, request.FormContextJson, cancellationToken);
+                modelUsed = effectiveModel;
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "External free LLM call failed. Falling back to built-in Pakistani legal engine.");
+                _logger.LogWarning(ex, "External free LLM call failed ({Url}). Falling back to built-in Pakistani legal engine.", externalApiUrl);
                 answer = GeneratePakistaniLegalResponse(prompt, isUrdu, request.FormContextJson);
             }
         }
@@ -124,7 +144,7 @@ public class FreeAiLegalAssistantService : IAiLegalAssistantService
         return Regex.IsMatch(text, @"[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]");
     }
 
-    private async Task<string> CallExternalFreeLlmAsync(string apiUrl, string apiKey, string prompt, string lang, string? contextJson, CancellationToken ct)
+    private async Task<string> CallExternalFreeLlmAsync(string apiUrl, string apiKey, string model, string prompt, string lang, string? contextJson, CancellationToken ct)
     {
         using var httpRequest = new HttpRequestMessage(HttpMethod.Post, apiUrl);
         httpRequest.Headers.Add("Authorization", $"Bearer {apiKey}");
@@ -134,14 +154,14 @@ public class FreeAiLegalAssistantService : IAiLegalAssistantService
 
         var payload = new
         {
-            model = "meta-llama/llama-3-8b-instruct:free",
+            model = model,
             messages = new[]
             {
                 new { role = "system", content = systemPrompt },
                 new { role = "user", content = userContent }
             },
             temperature = 0.3,
-            max_tokens = 1000
+            max_tokens = 1200
         };
 
         httpRequest.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
