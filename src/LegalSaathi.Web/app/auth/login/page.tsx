@@ -18,10 +18,12 @@ export default function LoginPage() {
   const [otpSent, setOtpSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
+    setUnverifiedEmail(null);
 
     if (!identifier.trim()) {
       setErrorMsg("Please enter your email or Pakistani mobile number / برائے مہربانی ای میل یا فون نمبر درج کریں");
@@ -41,6 +43,9 @@ export default function LoginPage() {
       router.push("/templates");
     } else {
       setErrorMsg(res.error || "Login failed. Please check your credentials.");
+      if (res.requiresEmailVerification) {
+        setUnverifiedEmail(res.unverifiedEmail || (identifier.includes("@") ? identifier : null));
+      }
     }
   };
 
@@ -63,8 +68,28 @@ export default function LoginPage() {
           </p>
         </div>
 
+        {/* Unverified Email Warning Card */}
+        {unverifiedEmail && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-900 p-4 rounded-xl text-xs space-y-2">
+            <div className="flex items-center gap-1.5 font-bold text-amber-800">
+              <span>⚠️</span>
+              <span>Email Not Verified / ای میل کی تصدیق درکار ہے</span>
+            </div>
+            <p className="leading-relaxed">
+              Your email address is not verified yet. We have sent a 6-digit OTP to your inbox.
+            </p>
+            <Link
+              href={`/auth/verify-email?email=${encodeURIComponent(unverifiedEmail)}`}
+              className="inline-flex items-center gap-1 font-bold text-emerald-800 underline hover:text-emerald-900 pt-1"
+            >
+              <span>Verify Email Now / ابھی ای میل کی تصدیق کریں</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        )}
+
         {/* Error Alert */}
-        {errorMsg && (
+        {errorMsg && !unverifiedEmail && (
           <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs flex items-center gap-2">
             <span className="font-semibold">⚠️</span>
             <span>{errorMsg}</span>

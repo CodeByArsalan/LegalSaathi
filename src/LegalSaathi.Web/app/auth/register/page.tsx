@@ -59,7 +59,7 @@ export default function RegisterPage() {
     setIsLoading(false);
 
     if (res.success) {
-      router.push("/templates");
+      router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
     } else {
       setErrorMsg(res.error || "Registration failed. Please try again.");
     }

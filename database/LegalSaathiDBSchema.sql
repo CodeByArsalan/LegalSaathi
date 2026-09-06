@@ -1,4 +1,4 @@
-﻿USE [LegalSaathiDB]
+USE [LegalSaathiDB]
 GO
 /****** Object:  Table [dbo].[AIQueries]    Script Date: 9/6/2026 2:46:10 AM ******/
 SET ANSI_NULLS ON
@@ -1557,6 +1557,23 @@ BEGIN
     UPDATE dbo.Users
     SET [RefreshToken] = @RefreshToken,
         [RefreshTokenExpiryDateTime] = @RefreshTokenExpiryDateTime,
+        [UpdatedDateTime] = SYSUTCDATETIME()
+    WHERE [UserID] = @UserID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[VerifyUserEmail]    Script Date: 9/6/2026 2:46:10 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE   PROCEDURE [dbo].[VerifyUserEmail]
+    @UserID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE dbo.Users
+    SET [IsEmailVerified] = 1,
         [UpdatedDateTime] = SYSUTCDATETIME()
     WHERE [UserID] = @UserID;
 END

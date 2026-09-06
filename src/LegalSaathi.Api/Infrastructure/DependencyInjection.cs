@@ -24,7 +24,7 @@ public static class DependencyInjection
         // 2. Authentication & Identity
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-        services.AddSingleton<IOtpService, MemoryOtpService>();
+        services.AddScoped<IOtpService, MemoryOtpService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<ITemplateService, TemplateService>();
@@ -50,8 +50,9 @@ public static class DependencyInjection
         services.AddScoped<IDocumentGenerationService, DocumentGenerationService>();
 
         // 7. Security, Signature & Notifications
+        services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
         services.AddScoped<ISignatureService, SignatureService>();
-        services.AddScoped<IEmailService, StubEmailService>();
+        services.AddScoped<IEmailService, SmtpEmailService>();
         services.AddScoped<ISmsService, StubSmsService>();
 
         return services;

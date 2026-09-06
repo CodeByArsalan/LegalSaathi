@@ -10,6 +10,22 @@ public record RegisterRequest(
     string? Cnic,
     UserRole Role = UserRole.EndUser);
 
+public record RegisterResponse(
+    int UserId,
+    string FullName,
+    string Email,
+    string PhoneNumber,
+    string Role,
+    bool RequiresEmailVerification,
+    string Message);
+
+public record VerifyEmailRequest(
+    string Email,
+    string OtpCode);
+
+public record ResendVerificationRequest(
+    string Email);
+
 public record LoginRequest(
     string EmailOrPhone,
     string Password);

@@ -39,3 +39,22 @@ export interface RegisterPayload {
   cnic?: string;
   role: UserRole;
 }
+
+export interface RegisterResponse {
+  userId: number;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  role: UserRole;
+  requiresEmailVerification: boolean;
+  message: string;
+}
+
+export interface VerifyEmailPayload {
+  email: string;
+  otpCode: string;
+}
+
+export interface ResendVerificationPayload {
+  email: string;
+}

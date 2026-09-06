@@ -22,17 +22,45 @@ public class AuthController : ApiControllerBase
     }
 
     /// <summary>
-    /// Register a new user account (Citizen, Corporate Admin, or Verified Lawyer)
+    /// Register a new user account and dispatch email verification OTP
     /// </summary>
     [HttpPost("register")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ApiResponse<AuthResponse>>> Register([FromBody] RegisterRequest request, CancellationToken ct)
+    [ProducesResponseType(typeof(ApiResponse<RegisterResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<RegisterResponse>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<RegisterResponse>>> Register([FromBody] RegisterRequest request, CancellationToken ct)
     {
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = Request.Headers.UserAgent.ToString();
         var result = await _authService.RegisterAsync(request, ip, userAgent, ct);
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// Verify email address using the 6-digit OTP code and receive authenticated JWT session
+    /// </summary>
+    [HttpPost("verify-email")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<AuthResponse>>> VerifyEmail([FromBody] VerifyEmailRequest request, CancellationToken ct)
+    {
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var userAgent = Request.Headers.UserAgent.ToString();
+        var result = await _authService.VerifyEmailAsync(request, ip, userAgent, ct);
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// Resend the 6-digit email verification OTP code
+    /// </summary>
+    [HttpPost("resend-verification")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<SendOtpResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<SendOtpResponse>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<SendOtpResponse>>> ResendVerification([FromBody] ResendVerificationRequest request, CancellationToken ct)
+    {
+        var result = await _authService.ResendVerificationEmailAsync(request, ct);
         return HandleResult(result);
     }
 

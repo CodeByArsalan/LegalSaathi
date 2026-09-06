@@ -13,6 +13,7 @@ public static class DbConstants
         public const string SpUserGetByEmailOrPhone = "dbo.GetUserByEmailOrPhone";
         public const string SpUserUpdate = "dbo.UpdateUser";
         public const string SpUserUpdateRefreshToken = "dbo.UpdateUserRefreshToken";
+        public const string SpUserVerifyEmail = "dbo.VerifyUserEmail";
 
         // Categories & Templates
         public const string SpCategoryGetAll = "dbo.GetAllCategories";

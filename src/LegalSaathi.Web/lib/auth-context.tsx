@@ -9,7 +9,7 @@ interface AuthContextType {
   accessToken: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (emailOrPhone: string, password?: string) => Promise<{ success: boolean; error?: string }>;
+  login: (emailOrPhone: string, password?: string) => Promise<{ success: boolean; error?: string; requiresEmailVerification?: boolean; unverifiedEmail?: string }>;
   register: (payload: {
     fullName: string;
     email: string;
@@ -17,7 +17,9 @@ interface AuthContextType {
     password: string;
     cnic?: string;
     role: UserRole;
-  }) => Promise<{ success: boolean; error?: string }>;
+  }) => Promise<{ success: boolean; error?: string; requiresEmailVerification?: boolean; email?: string }>;
+  verifyEmail: (email: string, otpCode: string) => Promise<{ success: boolean; error?: string }>;
+  resendVerificationEmail: (email: string) => Promise<{ success: boolean; message?: string; error?: string }>;
   logout: () => Promise<void>;
   updateProfile: (data: { fullName: string; phoneNumber: string; cnic?: string }) => Promise<{ success: boolean; error?: string }>;
 }
@@ -58,6 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       phoneNumber: auth.phoneNumber,
       role: auth.role,
       cnic: auth.cnic,
+      isEmailVerified: true,
+      isActive: true,
     };
 
     setUser(userData);
@@ -89,12 +93,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: true };
       }
 
+      const isUnverified = res.errors?.some((e) => e.includes("not been verified") || e.includes("EmailNotVerified")) ||
+                           res.message?.includes("not been verified");
+
       return {
         success: false,
         error: res.errors?.[0] || res.message || "Invalid login credentials",
+        requiresEmailVerification: isUnverified,
+        unverifiedEmail: isUnverified && emailOrPhone.includes("@") ? emailOrPhone : undefined,
       };
     } catch (err: any) {
-      return { success: false, error: err.message || "Network error. Please try again." };
+      const errMsg = err.message || "";
+      const isUnverified = errMsg.includes("not been verified") || errMsg.includes("EmailNotVerified");
+      return {
+        success: false,
+        error: errMsg || "Network error. Please try again.",
+        requiresEmailVerification: isUnverified,
+        unverifiedEmail: isUnverified && emailOrPhone.includes("@") ? emailOrPhone : undefined,
+      };
     } finally {
       setIsLoading(false);
     }
@@ -111,11 +127,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }) => {
       try {
         setIsLoading(true);
-        const res = await apiClient.post<AuthResponse>("/api/auth/register", payload);
+        const res = await apiClient.post<any>("/api/auth/register", payload);
 
         if (res.success && res.data) {
-          saveAuthSession(res.data);
-          return { success: true };
+          return {
+            success: true,
+            requiresEmailVerification: true,
+            email: payload.email,
+          };
         }
 
         return {
@@ -126,6 +145,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: err.message || "Network error. Please try again." };
       } finally {
         setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  const verifyEmail = useCallback(
+    async (email: string, otpCode: string) => {
+      try {
+        setIsLoading(true);
+        const res = await apiClient.post<AuthResponse>("/api/auth/verify-email", {
+          email,
+          otpCode,
+        });
+
+        if (res.success && res.data) {
+          saveAuthSession(res.data);
+          return { success: true };
+        }
+
+        return {
+          success: false,
+          error: res.errors?.[0] || res.message || "Verification failed",
+        };
+      } catch (err: any) {
+        return { success: false, error: err.message || "Failed to verify OTP code." };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  const resendVerificationEmail = useCallback(
+    async (email: string) => {
+      try {
+        const res = await apiClient.post<any>("/api/auth/resend-verification", {
+          email,
+        });
+
+        if (res.success) {
+          return { success: true, message: res.message || "Verification code resent." };
+        }
+
+        return {
+          success: false,
+          error: res.errors?.[0] || res.message || "Failed to resend code.",
+        };
+      } catch (err: any) {
+        return { success: false, error: err.message || "Failed to resend verification code." };
       }
     },
     []
@@ -182,6 +250,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!user && !!accessToken,
         login,
         register,
+        verifyEmail,
+        resendVerificationEmail,
         logout,
         updateProfile,
       }}

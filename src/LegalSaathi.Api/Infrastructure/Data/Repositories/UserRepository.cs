@@ -136,6 +136,20 @@ public class UserRepository : IUserRepository
         return rows > 0;
     }
 
+    public async Task<bool> VerifyEmailAsync(int userId, CancellationToken ct = default)
+    {
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = DbConstants.Procedures.SpUserVerifyEmail;
+        command.CommandType = CommandType.StoredProcedure;
+        command.CommandTimeout = 30;
+
+        command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.Int) { Value = userId });
+
+        var rows = await command.ExecuteNonQueryAsync(ct);
+        return rows > 0;
+    }
+
     private static User MapUserFromReader(SqlDataReader reader, bool includeCredentials)
     {
         var user = new User

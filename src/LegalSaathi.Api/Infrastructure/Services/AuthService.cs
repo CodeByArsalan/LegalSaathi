@@ -17,8 +17,8 @@ public class AuthService : IAuthService
     private readonly IAuditLogService _auditLogService;
     private readonly ILogger<AuthService> _logger;
 
-    private static readonly Regex EmailRegex = new(@"^[^@s]+@[^@s]+.[^@s]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex PakistanPhoneRegex = new(@"^((+92)|(0092)|(0))?3[0-9]{9}$", RegexOptions.Compiled);
+    private static readonly Regex EmailRegex = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex PakistanPhoneRegex = new(@"^((\+92)|(0092)|(0))?3[0-9]{9}$", RegexOptions.Compiled);
     private static readonly Regex PakistanCnicRegex = new(@"^([0-9]{5}-[0-9]{7}-[0-9]|[0-9]{13})$", RegexOptions.Compiled);
 
     public AuthService(
@@ -37,28 +37,28 @@ public class AuthService : IAuthService
         _logger = logger;
     }
 
-    public async Task<Result<AuthResponse>> RegisterAsync(RegisterRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
+    public async Task<Result<RegisterResponse>> RegisterAsync(RegisterRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         // 1. Validation
         if (string.IsNullOrWhiteSpace(request.FullName) || request.FullName.Trim().Length < 2)
         {
-            return Result<AuthResponse>.Failure("Full name is required and must be at least 2 characters.");
+            return Result<RegisterResponse>.Failure("Full name is required and must be at least 2 characters.");
         }
 
         if (string.IsNullOrWhiteSpace(request.Email) || !EmailRegex.IsMatch(request.Email.Trim()))
         {
-            return Result<AuthResponse>.Failure("A valid email address is required.");
+            return Result<RegisterResponse>.Failure("A valid email address is required.");
         }
 
         var normalizedPhone = NormalizePhoneNumber(request.PhoneNumber);
         if (string.IsNullOrWhiteSpace(normalizedPhone) || !PakistanPhoneRegex.IsMatch(normalizedPhone))
         {
-            return Result<AuthResponse>.Failure("A valid Pakistani mobile number is required (e.g. 03001234567 or +923001234567).");
+            return Result<RegisterResponse>.Failure("A valid Pakistani mobile number is required (e.g. 03001234567 or +923001234567).");
         }
 
         if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 8)
         {
-            return Result<AuthResponse>.Failure("Password must be at least 8 characters long.");
+            return Result<RegisterResponse>.Failure("Password must be at least 8 characters long.");
         }
 
         string? formattedCnic = null;
@@ -67,7 +67,7 @@ public class AuthService : IAuthService
             var cleanedCnic = request.Cnic.Trim();
             if (!PakistanCnicRegex.IsMatch(cleanedCnic))
             {
-                return Result<AuthResponse>.Failure("CNIC must follow the 13-digit Pakistani format (e.g. 35201-1234567-1).");
+                return Result<RegisterResponse>.Failure("CNIC must follow the 13-digit Pakistani format (e.g. 35201-1234567-1).");
             }
             formattedCnic = FormatCnic(cleanedCnic);
         }
@@ -76,16 +76,16 @@ public class AuthService : IAuthService
         var existingUser = await _userRepository.GetByEmailOrPhoneAsync(request.Email.Trim(), ct);
         if (existingUser != null)
         {
-            return Result<AuthResponse>.Failure("An account with this email address already exists.");
+            return Result<RegisterResponse>.Failure("An account with this email address already exists.");
         }
 
         var existingPhoneUser = await _userRepository.GetByEmailOrPhoneAsync(normalizedPhone, ct);
         if (existingPhoneUser != null)
         {
-            return Result<AuthResponse>.Failure("An account with this phone number already exists.");
+            return Result<RegisterResponse>.Failure("An account with this phone number already exists.");
         }
 
-        // 3. Hash password and persist user
+        // 3. Hash password and persist user with IsEmailVerified = false
         var passwordHash = _passwordHasher.HashPassword(request.Password);
         var roleId = (int)request.Role;
 
@@ -106,12 +106,8 @@ public class AuthService : IAuthService
         var userId = await _userRepository.CreateUserAsync(user, ct);
         user.UserID = userId;
 
-        // 4. Generate JWT & Refresh Tokens
-        var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
-        var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
-        var refreshExpiry = DateTime.UtcNow.AddDays(7);
-
-        await _userRepository.UpdateRefreshTokenAsync(userId, refreshToken, refreshExpiry, ct);
+        // 4. Generate & Send Email Verification OTP
+        await _otpService.SendOtpAsync(user.Email, "EmailVerification", ct);
 
         // 5. Audit Log
         await _auditLogService.LogAsync(
@@ -121,20 +117,102 @@ public class AuthService : IAuthService
             entityId: userId.ToString(),
             ipAddress: ipAddress,
             userAgent: userAgent,
-            newValuesJson: System.Text.Json.JsonSerializer.Serialize(new { user.Email, user.Phone, Role = request.Role.ToString(), user.Cnic }),
+            newValuesJson: System.Text.Json.JsonSerializer.Serialize(new { user.Email, user.Phone, Role = request.Role.ToString(), user.Cnic, IsEmailVerified = false }),
             ct: ct);
 
-        var expiresAt = DateTime.UtcNow.AddMinutes(60);
-        return Result<AuthResponse>.Success(new AuthResponse(
+        return Result<RegisterResponse>.Success(new RegisterResponse(
             UserId: userId,
             FullName: user.Name,
             Email: user.Email,
             PhoneNumber: user.Phone,
             Role: request.Role.ToString(),
+            RequiresEmailVerification: true,
+            Message: $"Registration successful! A 6-digit verification code has been sent to {user.Email}."));
+    }
+
+    public async Task<Result<AuthResponse>> VerifyEmailAsync(VerifyEmailRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.OtpCode))
+        {
+            return Result<AuthResponse>.Failure("Email address and 6-digit OTP code are required.");
+        }
+
+        var email = request.Email.Trim().ToLowerInvariant();
+        var user = await _userRepository.GetByEmailAsync(email, ct);
+        if (user == null)
+        {
+            return Result<AuthResponse>.Failure("No account found with this email address.");
+        }
+
+        // Verify OTP
+        var (verified, otpMessage, _) = await _otpService.VerifyOtpAsync(email, request.OtpCode.Trim(), "EmailVerification", ct);
+        if (!verified)
+        {
+            return Result<AuthResponse>.Failure(otpMessage, "InvalidOtp");
+        }
+
+        // Mark Email as verified in database
+        await _userRepository.VerifyEmailAsync(user.UserID, ct);
+        user.IsEmailVerified = true;
+
+        // Generate JWT Tokens for verified user
+        var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
+        var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
+        var refreshExpiry = DateTime.UtcNow.AddDays(7);
+
+        await _userRepository.UpdateRefreshTokenAsync(user.UserID, refreshToken, refreshExpiry, ct);
+
+        // Audit Log
+        await _auditLogService.LogAsync(
+            userId: user.UserID,
+            action: "EMAIL_VERIFIED",
+            entityName: "Users",
+            entityId: user.UserID.ToString(),
+            ipAddress: ipAddress,
+            userAgent: userAgent,
+            newValuesJson: System.Text.Json.JsonSerializer.Serialize(new { user.Email, IsEmailVerified = true, VerifiedAt = DateTime.UtcNow }),
+            ct: ct);
+
+        var expiresAt = DateTime.UtcNow.AddMinutes(60);
+        return Result<AuthResponse>.Success(new AuthResponse(
+            UserId: user.UserID,
+            FullName: user.Name,
+            Email: user.Email,
+            PhoneNumber: user.Phone,
+            Role: user.Role.ToString(),
             Cnic: user.Cnic,
             AccessToken: accessToken,
             RefreshToken: refreshToken,
-            ExpiresAt: expiresAt));
+            ExpiresAt: expiresAt),
+            "Email verified successfully. Welcome to Legal Saathi!");
+    }
+
+    public async Task<Result<SendOtpResponse>> ResendVerificationEmailAsync(ResendVerificationRequest request, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email))
+        {
+            return Result<SendOtpResponse>.Failure("Email address is required.");
+        }
+
+        var email = request.Email.Trim().ToLowerInvariant();
+        var user = await _userRepository.GetByEmailAsync(email, ct);
+        if (user == null)
+        {
+            return Result<SendOtpResponse>.Failure("No account found with this email address.");
+        }
+
+        if (user.IsEmailVerified)
+        {
+            return Result<SendOtpResponse>.Failure("This email address is already verified. You can log in directly.");
+        }
+
+        var (success, message, expiry) = await _otpService.SendOtpAsync(user.Email, "EmailVerification", ct);
+        if (!success)
+        {
+            return Result<SendOtpResponse>.Failure(message);
+        }
+
+        return Result<SendOtpResponse>.Success(new SendOtpResponse(success, $"Verification code sent to {user.Email}.", expiry));
     }
 
     public async Task<Result<AuthResponse>> LoginAsync(LoginRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
@@ -166,6 +244,16 @@ public class AuthService : IAuthService
         if (!_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
         {
             return Result<AuthResponse>.Failure("Invalid email/phone or password.");
+        }
+
+        // Email Verification Guard: Prevent login if email is not verified
+        if (!user.IsEmailVerified)
+        {
+            // Automatically trigger fresh OTP for the user
+            await _otpService.SendOtpAsync(user.Email, "EmailVerification", ct);
+            return Result<AuthResponse>.Failure(
+                $"Your email address ({user.Email}) has not been verified yet. A 6-digit verification OTP has been sent to your email. Please verify your email before logging in.",
+                "EmailNotVerified");
         }
 
         // Generate Tokens
@@ -394,16 +482,17 @@ public class AuthService : IAuthService
     private static string NormalizePhoneNumber(string phone)
     {
         if (string.IsNullOrWhiteSpace(phone)) return string.Empty;
-        var cleaned = Regex.Replace(phone, @"[s-]", "");
+        var cleaned = Regex.Replace(phone, @"[\s\-]", "");
         if (cleaned.StartsWith("+92")) cleaned = "0" + cleaned[3..];
         else if (cleaned.StartsWith("0092")) cleaned = "0" + cleaned[4..];
-        else if (cleaned.StartsWith("92")) cleaned = "0" + cleaned[2..];
+        else if (cleaned.StartsWith("92") && cleaned.Length == 12) cleaned = "0" + cleaned[2..];
+        else if (!cleaned.StartsWith("0") && cleaned.Length == 10 && cleaned.StartsWith("3")) cleaned = "0" + cleaned;
         return cleaned;
     }
 
     private static string FormatCnic(string cnic)
     {
-        var digits = Regex.Replace(cnic, @"[^d]", "");
+        var digits = Regex.Replace(cnic, @"[^\d]", "");
         if (digits.Length == 13)
         {
             return $"{digits[..5]}-{digits.Substring(5, 7)}-{digits[12]}";
