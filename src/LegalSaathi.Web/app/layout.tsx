@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ur" dir="rtl" className={`${inter.variable} ${nastaliq.variable}`}>
+    <html lang="en" dir="ltr" className={`${inter.variable} ${nastaliq.variable}`}>
       <body className="min-h-screen flex flex-col font-sans">
         <AuthProvider>
           <Navbar />

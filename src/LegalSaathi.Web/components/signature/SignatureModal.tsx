@@ -266,7 +266,7 @@ export function SignatureModal({
                   maxLength={15}
                   value={signerCnic}
                   onChange={(e) => setSignerCnic(formatCnic(e.target.value))}
-                  placeholder="35201-1234567-1"
+                  placeholder="11111-1111111-1"
                   className="w-full text-xs px-3 py-2 border border-slate-200 rounded-xl font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>

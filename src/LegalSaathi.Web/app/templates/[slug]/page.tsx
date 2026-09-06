@@ -263,7 +263,7 @@ export default function TemplateQuestionnairePage() {
                       maxLength={15}
                       value={formAnswers[field.fieldKey] || ""}
                       onChange={(e) => handleInputChange(field.fieldKey, formatCnic(e.target.value))}
-                      placeholder={field.placeholderEn || "35201-1234567-1"}
+                      placeholder={field.placeholderEn || "11111-1111111-1"}
                       className="w-full text-xs px-3 py-2.5 border border-slate-200 rounded-xl font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
                   ) : field.fieldType === "Date" ? (

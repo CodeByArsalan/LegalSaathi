@@ -81,10 +81,20 @@ class ApiClient {
       const json: ApiResponse<T> = await response.json();
 
       if (!response.ok || !json.success) {
+        let extractedError: string | null = null;
+        if (Array.isArray(json.errors) && json.errors.length > 0) {
+          extractedError = json.errors[0];
+        } else if (json.errors && typeof json.errors === "object") {
+          const errorValues = Object.values(json.errors).flat() as string[];
+          if (errorValues.length > 0) {
+            extractedError = errorValues[0];
+          }
+        }
+
         throw new ApiError(
-          json.message || `HTTP Error ${response.status}`,
+          extractedError || json.message || `HTTP Error ${response.status}`,
           json.statusCode || response.status,
-          json.errors || []
+          Array.isArray(json.errors) ? json.errors : []
         );
       }
 
