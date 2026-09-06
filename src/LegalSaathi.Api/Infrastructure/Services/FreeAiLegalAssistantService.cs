@@ -155,7 +155,36 @@ public class FreeAiLegalAssistantService : IAiLegalAssistantService
 
     public static string GeneratePakistaniLegalResponse(string prompt, bool isUrdu, string? contextJson)
     {
-        var p = prompt.ToLowerInvariant();
+        var p = prompt.Trim().ToLowerInvariant();
+
+        // 0. GREETINGS & INTRODUCTORY CONVERSATION
+        if (p == "hi" || p == "hello" || p == "hey" || p == "salam" || p == "assalam o alaikum" || 
+            p.Contains("who are you") || p.Contains("what can you do") || p.Contains("help") || 
+            p == "سلام" || p == "ہیلو" || p == "کون ہو" || p == "مدد")
+        {
+            if (isUrdu)
+            {
+                return "👋 **خوش آمدید! میں لیگل ساتھی AI قانونی معاون ہوں۔**\n\n" +
+                       "میں پاکستان کے قانونی قوانین اور دستاویزات میں آپ کی رہنمائی کے لیے حاضر ہوں۔ آپ مجھ سے درج ذیل امور پر رہنمائی لے سکتے ہیں:\n\n" +
+                       "1. 🏡 **جائیداد اور مکان کی فروخت:** بیع نامہ، فرد ملکیت، اسٹامپ ڈیوٹی چالان 32-A، اور سب رجسٹرار رجسٹری۔\n" +
+                       "2. 🏠 **کرایہ داری معاہدہ:** کرایہ نامہ، 30 تا 60 دن کا نوٹس پیریڈ، اور سیکیورٹی ڈپازٹ قوانین۔\n" +
+                       "3. 📜 **بیان حلفی اور گواہان:** اووتھ کمشنر کی تصدیق اور قانون شہادت 1984 کے تحت گواہان کی شرائط۔\n" +
+                       "4. 🚗 **گاڑی کی منتقلی:** گاڑی کا بیع نامہ اور نادرا بائیو میٹرک ٹرانسفر کا طریقہ۔\n" +
+                       "5. 👨‍👩‍👧‍👦 **وراثت و فیملی لا:** نادرا سکسیشن سرٹیفکیٹ، طلاق، خلع اور حق مہر۔\n" +
+                       "6. 💼 **ملازمت اور این ڈی اے:** کانٹریکٹ ایکٹ 1872 اور نان کمپیٹ شقیں۔\n\n" +
+                       "💬 *شروع کرنے کے لیے اپنا کوئی بھی قانونی سوال نیچے درج کریں یا ہمارے مصدقہ وکیل سے مفت قانونی جائزے کی درخواست کریں۔*";
+            }
+
+            return "👋 **Welcome! I am Legal Saathi AI Legal Assistant.**\n\n" +
+                   "I am an intelligent legal advisor specialized in Pakistani statutory laws, court precedents, and document preparation. Here is how I can assist you:\n\n" +
+                   "1. 🏡 **Property & House Conveyance:** Step-by-step guidance on Agreement to Sell (Bayana), Fard Malkiat, e-Stamp Form 32-A, FBR taxes (236C / 236K), and Sub-Registrar deed registration.\n" +
+                   "2. 🏠 **Rent & Tenancy:** Lease drafting, security deposit rules, annual rent enhancement limits, and statutory eviction notice periods.\n" +
+                   "3. 📜 **Affidavits & Witness Rules:** Oath Commissioner attestation, non-judicial stamp paper valuations, and witness requirements under Qanun-e-Shahadat 1984.\n" +
+                   "4. 🚗 **Vehicle Sales & Transfers:** Vehicle delivery receipts and mandatory NADRA biometric transfer rules.\n" +
+                   "5. 👨‍👩‍👧‍👦 **Inheritance & Family Law:** NADRA fast-track succession certificates, divorce notices under MFLO 1961, Khula, and child maintenance.\n" +
+                   "6. 💼 **Employment & NDAs:** Enforceability of non-competes under Section 27 of Contract Act 1872, IP assignment, and arbitration clauses.\n\n" +
+                   "💬 *To get started, simply type your legal scenario or question below!*";
+        }
 
         // 1. PROPERTY SALE / PURCHASE / HOUSE / PLOT / REAL ESTATE
         if (p.Contains("sell") || p.Contains("sale") || p.Contains("buy") || p.Contains("purchase") || 
@@ -458,23 +487,31 @@ public class FreeAiLegalAssistantService : IAiLegalAssistantService
                    "4. **Dispute Resolution Clause:** Always include a domestic Arbitration Clause (under Arbitration Act 1940) in Islamabad/Lahore/Karachi to avoid lengthy court litigation.";
         }
 
-        // 12. GENERAL STATUTORY RESPONSE (Context-Aware)
+        // 12. GENERAL / UNRECOGNIZED QUERY (Context-Aware Fallback)
         if (isUrdu)
         {
-            return "⚖️ **لیگل ساتھی قانونی معاونت (Legal Saathi AI Advisor):**\n\n" +
-                   "آپ کا قانونی سوال موصول ہوا ہے۔ پاکستانی قانون کے تناظر میں درج ذیل رہنما اصول ملاحظہ فرمائیں:\n\n" +
-                   "1. **فریقین کی قانونی اہلیت:** کسی بھی معاہدے پر تمام فریقین کے درست 13 ہندسی شناختی کارڈ (CNIC)، مستقل پتے اور قانونی اہلیت کا اندراج لازمی ہے (کنٹریکٹ ایکٹ 1872)۔\n" +
-                   "2. **گواہان کی لازمی شرائط:** قانون شہادت آرڈر 1984 کے آرٹیکل 79 کے تحت مالیاتی یا جائیداد کے قانونی معاہدات پر کم از کم دو مرد گواہان (یا ایک مرد اور دو خواتین) کے دستخط اور شناختی کارڈ نمبر لازمی ہیں۔\n" +
-                   "3. **اسٹامپ ڈیوٹی اور تصدیق:** معاہدے کو عدالتی اعتبار فراہم کرنے کے لیے متعلقہ صوبے کے ای-اسٹامپ پورٹل سے جاری کردہ اسٹامپ پیپر پر پرنٹ کر کے اووتھ کمشنر / نوٹری سے تصدیق کروائیں۔\n\n" +
-                   "💡 *خصوصی رہنمائی:* آپ مخصوص سوال (مثلاً: مکان کی فروخت، کرایہ داری، بیان حلفی، یا گاڑی کا ٹرانسفر) لکھ کر مزید تفصیلی قانونی رہنمائی حاصل کر سکتے ہیں یا ہمارے مصدقہ وکیل سے مفت 'Lawyer Review' کی درخواست کر سکتے ہیں۔";
+            return "⚖️ **لیگل ساتھی قانونی مشیر (Legal Saathi Legal Advisor):**\n\n" +
+                   "آپ کا سوال موصول ہوا ہے۔ میں پاکستان کے قانونی قوانین اور دستاویزات کا ماہر AI معاون ہوں۔\n\n" +
+                   "اگر آپ کا سوال کسی مخصوص قانونی معاملے سے متعلق ہے تو براہ کرم درج ذیل موضوعات میں سے کسی ایک کا ذکر کریں:\n\n" +
+                   "• 🏡 **مکان یا پلاٹ کی فروخت:** 'مکان فروخت کرنے کا طریقہ کیا ہے؟'\n" +
+                   "• 📋 **دستاویزات کی فہرست:** 'رجسٹری کے لیے کون سے کاغذات درکار ہیں؟'\n" +
+                   "• 🏠 **کرایہ داری:** 'کرایہ دار کو نکالنے کا نوٹس پیریڈ کیا ہے؟'\n" +
+                   "• 🚗 **گاڑی کا ٹرانسفر:** 'گاڑی بیچنے پر بائیو میٹرک کیوں ضروری ہے؟'\n" +
+                   "• 👨‍👩‍👧‍👦 **وراثت و فیملی:** 'نادرا سکسیشن سرٹیفکیٹ کیسے بنتا ہے؟'\n" +
+                   "• 📜 **بیان حلفی و گواہان:** 'قانون شہادت 1984 کے تحت گواہوں کی کیا شرائط ہیں؟'\n\n" +
+                   "💡 *کسی بھی دستاویز کا جائزہ کروانے کے لیے آپ ہمارے ہائی کورٹ کے تصدیق شدہ وکیل سے مفت 'Lawyer Review' بھی حاصل کر سکتے ہیں۔*";
         }
 
-        return "⚖️ **Legal Saathi AI Legal Assistant (Pakistani Legal Framework):**\n\n" +
-               "Here is the legal guidance based on applicable Pakistani statutes:\n\n" +
-               "1. **Contractual Capacity & Identity:** Every party must be identified with valid 13-digit NADRA CNICs, residential addresses, and contractual competence under Section 11 of the Contract Act 1872.\n" +
-               "2. **Mandatory Attesting Witnesses:** Under Article 79 of Qanun-e-Shahadat Order 1984, documents creating financial obligations or property conveyances must be attested by at least **two adult male witnesses** (or one male and two female witnesses).\n" +
-               "3. **Provincial Stamp Duty & E-Stamping:** Ensure the instrument is printed on valid **Provincial e-Stamp Paper** (e-Stamp Punjab / Sindh / KPK / ICT) under the Stamp Act 1899 to maintain judicial admissibility.\n" +
-               "4. **Registration & Attestation:** Instruments affecting immovable property title must be registered before the Sub-Registrar under Section 17 of the Registration Act 1908.\n\n" +
-               "💡 *Next Steps:* You can ask specific questions on **House/Plot Sale**, **Rent & Tenancy**, **Vehicle Transfer**, **Affidavits**, **Inheritance**, or **Employment Contracts** for deep step-by-step statutory instructions, or request a **Free Lawyer Review** from our verified advocates directory.";
+        return "⚖️ **Legal Saathi AI Assistant (Pakistani Legal Framework):**\n\n" +
+               "I am Legal Saathi, an AI assistant dedicated specifically to **Pakistani statutory laws, legal contracts, and court procedures**.\n\n" +
+               "To help you with exact legal steps, please specify your query within any of these key legal topics:\n\n" +
+               "• 🏡 **Property & Real Estate:** *'How to sell my house in Pakistan?'* or *'What is Fard Malkiat & Bayana?'*\n" +
+               "• 📋 **Document Checklists:** *'What documents are required for registry / transfer?'*\n" +
+               "• 🏠 **Tenancy & Leases:** *'What are tenant rights and eviction notice periods?'*\n" +
+               "• 🚗 **Vehicle Transfers:** *'What is the legal procedure to sell a car/bike?'*\n" +
+               "• 👨‍👩‍👧‍👦 **Inheritance & Family Law:** *'How to get a NADRA succession certificate?'*\n" +
+               "• 📜 **Affidavits & Witnesses:** *'What are witness rules under Qanun-e-Shahadat 1984?'*\n" +
+               "• 💼 **Employment & NDAs:** *'Is a non-compete clause legal under Contract Act 1872?'*\n\n" +
+               "💡 *Next Steps:* You can also submit any drafted contract for a **Free Lawyer Review** with a verified High Court advocate.";
     }
 }
