@@ -15,6 +15,15 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  async rewrites() {
+    const backendUrl = process.env.BACKEND_INTERNAL_URL || 'http://legalsaathi.runasp.net';
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${backendUrl}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

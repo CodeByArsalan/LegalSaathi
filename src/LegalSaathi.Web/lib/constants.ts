@@ -2,7 +2,7 @@ export const APP_CONFIG = {
   name: "Legal Saathi",
   taglineEn: "Pakistan's Premier Bilingual AI Legal Document Platform",
   taglineUr: "پاکستان کا پہلا دو لسانی، اے آئی سے لیس قانونی دستاویزات کا پلیٹ فارم",
-  apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api",
+  apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "/api",
   defaultLocale: "ur" as const,
   supportedLocales: ["ur", "en"] as const,
 };
