@@ -24,16 +24,28 @@ import {
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 
+interface BackendQuickPrompt {
+  id: string;
+  titleEng: string;
+  titleUrdu: string;
+  promptEng: string;
+  promptUrdu: string;
+  category: string;
+  icon: string;
+}
+
+interface PromptItem {
+  labelEn: string;
+  labelUr: string;
+  promptEn: string;
+  promptUr: string;
+}
+
 interface QuickPromptCategory {
   titleEn: string;
   titleUr: string;
   icon: string;
-  prompts: {
-    labelEn: string;
-    labelUr: string;
-    promptEn: string;
-    promptUr: string;
-  }[];
+  prompts: PromptItem[];
 }
 
 interface UserDocOption {
@@ -51,6 +63,85 @@ interface ChatMessage {
   timestamp: string;
 }
 
+const DEFAULT_CATEGORIES: QuickPromptCategory[] = [
+  {
+    titleEn: "Stamp Duty & E-Stamping",
+    titleUr: "اسٹامپ پیپر اور ڈیوٹی",
+    icon: "stamp",
+    prompts: [
+      {
+        labelEn: "Stamp Duty Calculation",
+        labelUr: "اسٹامپ ڈیوٹی حساب",
+        promptEn: "What stamp paper value and duty are required for a standard rent agreement in Punjab and Sindh under the Stamp Act 1899?",
+        promptUr: "پنجاب اور سندھ میں کرایہ نامہ کے لیے کتنے مالیت کا اسٹامپ پیپر درکار ہے؟"
+      },
+      {
+        labelEn: "E-Stamp Verification",
+        labelUr: "ای اسٹامپ تصدیق",
+        promptEn: "How can I verify the authenticity of a 32-A e-Stamp paper issued by Punjab Bank or Sindh portal?",
+        promptUr: "ای اسٹامپ پیپر کی تصدیق کا طریقہ کار کیا ہے؟"
+      }
+    ]
+  },
+  {
+    titleEn: "Tenancy & Eviction",
+    titleUr: "کرایہ داری اور بے دخلی",
+    icon: "home",
+    prompts: [
+      {
+        labelEn: "Tenancy Notice Period",
+        labelUr: "کرایہ داری نوٹس پیریڈ",
+        promptEn: "What is the mandatory legal notice period required to evict a tenant under the Punjab Rented Premises Act 2009?",
+        promptUr: "پنجاب رینٹڈ پریمائزز ایکٹ کے تحت کرایہ دار کو نوٹس دینے کی قانونی مدت کیا ہے؟"
+      },
+      {
+        labelEn: "Security Deposit Rules",
+        labelUr: "سیکیورٹی ڈپازٹ قوانین",
+        promptEn: "What are the rules and standard deductions for security deposits at the end of a residential tenancy?",
+        promptUr: "کرایہ داری ختم ہونے پر سیکیورٹی ڈپازٹ کی واپسی کے کیا اصول ہیں؟"
+      }
+    ]
+  },
+  {
+    titleEn: "Witnesses & Qanun-e-Shahadat",
+    titleUr: "گواہان اور شہادت",
+    icon: "users",
+    prompts: [
+      {
+        labelEn: "Witness Competence & Number",
+        labelUr: "گواہوں کی تعداد اور شرائط",
+        promptEn: "What are the required number and legal competence of witnesses for financial agreements under Article 79 of Qanun-e-Shahadat Order 1984?",
+        promptUr: "قانون شہادت 1984 کے تحت مالیاتی معاہدے کے لیے کتنے اور کن گواہوں کی ضرورت ہوتی ہے؟"
+      },
+      {
+        labelEn: "Affidavit Oath Attestation",
+        labelUr: "بیان حلفی تصدیق",
+        promptEn: "What are the requirements for an affidavit to be legally admissible under the Oaths Act 1873 in Pakistani courts?",
+        promptUr: "اووتھس ایکٹ 1873 کے تحت بیان حلفی کی اووتھ کمشنر سے تصدیق کیوں ضروری ہے؟"
+      }
+    ]
+  },
+  {
+    titleEn: "Employment & NDAs",
+    titleUr: "ملازمت اور رازداری",
+    icon: "briefcase",
+    prompts: [
+      {
+        labelEn: "Non-Compete Enforceability",
+        labelUr: "نان کمپیٹ شق کی قانونی حیثیت",
+        promptEn: "Is a post-employment non-compete clause legally enforceable under Section 27 of the Contract Act 1872 in Pakistan?",
+        promptUr: "کیا پاکستان میں کنٹریکٹ ایکٹ کے سیکشن 27 کے تحت نان کمپیٹ شق قابل عمل ہے؟"
+      },
+      {
+        labelEn: "Probation & Termination",
+        labelUr: "پروبیشن اور برطرفی",
+        promptEn: "What are the legal notice requirements for termination of employment during and after probation in Pakistan?",
+        promptUr: "پروبیشن پیریڈ کے دوران یا بعد میں ملازم کو نوٹس دینے کے کیا قانونی ضوابط ہیں؟"
+      }
+    ]
+  }
+];
+
 export default function AiAssistantPage() {
   const { isAuthenticated } = useAuth();
   const [language, setLanguage] = useState<"en" | "ur">("en");
@@ -60,7 +151,7 @@ export default function AiAssistantPage() {
 
   const [userDocuments, setUserDocuments] = useState<UserDocOption[]>([]);
   const [selectedDocId, setSelectedDocId] = useState<number | undefined>(undefined);
-  const [categories, setCategories] = useState<QuickPromptCategory[]>([]);
+  const [categories, setCategories] = useState<QuickPromptCategory[]>(DEFAULT_CATEGORIES);
   
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -84,111 +175,63 @@ export default function AiAssistantPage() {
   }, [messages, isAsking]);
 
   useEffect(() => {
-    // Fetch quick prompts from backend
-    async function loadPrompts() {
+    // Fetch quick prompts from backend and transform safely
+    const loadPrompts = async () => {
       try {
-        const res = await apiClient.get<QuickPromptCategory[]>("/api/ai/quick-prompts");
-        if (res.success && res.data) {
-          setCategories(res.data);
-        } else {
-          // Fallback categories
-          setCategories([
-            {
-              titleEn: "Stamp Duty & E-Stamping",
-              titleUr: "اسٹامپ پیپر اور ڈیوٹی",
-              icon: "stamp",
-              prompts: [
-                {
-                  labelEn: "Stamp Duty Calculation",
-                  labelUr: "اسٹامپ ڈیوٹی حساب",
-                  promptEn: "What stamp paper value and duty are required for a standard rent agreement in Punjab and Sindh under the Stamp Act 1899?",
-                  promptUr: "پنجاب اور سندھ میں کرایہ نامہ کے لیے کتنے مالیت کا اسٹامپ پیپر درکار ہے؟"
-                },
-                {
-                  labelEn: "E-Stamp Verification",
-                  labelUr: "ای اسٹامپ تصدیق",
-                  promptEn: "How can I verify the authenticity of a 32-A e-Stamp paper issued by Punjab Bank or Sindh portal?",
-                  promptUr: "ای اسٹامپ پیپر کی تصدیق کا طریقہ کار کیا ہے؟"
-                }
-              ]
-            },
-            {
-              titleEn: "Tenancy & Eviction",
-              titleUr: "کرایہ داری اور بے دخلی",
-              icon: "home",
-              prompts: [
-                {
-                  labelEn: "Tenancy Notice Period",
-                  labelUr: "کرایہ داری نوٹس پیریڈ",
-                  promptEn: "What is the mandatory legal notice period required to evict a tenant under the Punjab Rented Premises Act 2009?",
-                  promptUr: "پنجاب رینٹڈ پریمائزز ایکٹ کے تحت کرایہ دار کو نوٹس دینے کی قانونی مدت کیا ہے؟"
-                },
-                {
-                  labelEn: "Security Deposit Rules",
-                  labelUr: "سیکیورٹی ڈپازٹ قوانین",
-                  promptEn: "What are the rules and standard deductions for security deposits at the end of a residential tenancy?",
-                  promptUr: "کرایہ داری ختم ہونے پر سیکیورٹی ڈپازٹ کی واپسی کے کیا اصول ہیں؟"
-                }
-              ]
-            },
-            {
-              titleEn: "Witnesses & Qanun-e-Shahadat",
-              titleUr: "گواہان اور شہادت",
-              icon: "users",
-              prompts: [
-                {
-                  labelEn: "Witness Competence & Number",
-                  labelUr: "گواہوں کی تعداد اور شرائط",
-                  promptEn: "What are the required number and legal competence of witnesses for financial agreements under Article 79 of Qanun-e-Shahadat Order 1984?",
-                  promptUr: "قانون شہادت 1984 کے تحت مالیاتی معاہدے کے لیے کتنے اور کن گواہوں کی ضرورت ہوتی ہے؟"
-                },
-                {
-                  labelEn: "Affidavit Oath Attestation",
-                  labelUr: "بیان حلفی تصدیق",
-                  promptEn: "What are the requirements for an affidavit to be legally admissible under the Oaths Act 1873 in Pakistani courts?",
-                  promptUr: "اووتھس ایکٹ 1873 کے تحت بیان حلفی کی اووتھ کمشنر سے تصدیق کیوں ضروری ہے؟"
-                }
-              ]
-            },
-            {
-              titleEn: "Employment & NDAs",
-              titleUr: "ملازمت اور رازداری",
-              icon: "briefcase",
-              prompts: [
-                {
-                  labelEn: "Non-Compete Enforceability",
-                  labelUr: "نان کمپیٹ شق کی قانونی حیثیت",
-                  promptEn: "Is a post-employment non-compete clause legally enforceable under Section 27 of the Contract Act 1872 in Pakistan?",
-                  promptUr: "کیا پاکستان میں کنٹریکٹ ایکٹ کے سیکشن 27 کے تحت نان کمپیٹ شق قابل عمل ہے؟"
-                },
-                {
-                  labelEn: "Probation & Termination",
-                  labelUr: "پروبیشن اور برطرفی",
-                  promptEn: "What are the legal notice requirements for termination of employment during and after probation in Pakistan?",
-                  promptUr: "پروبیشن پیریڈ کے دوران یا بعد میں ملازم کو نوٹس دینے کے کیا قانونی ضوابط ہیں؟"
-                }
-              ]
+        const res = await apiClient.get<BackendQuickPrompt[]>("/api/ai/quick-prompts");
+        if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+          // Group flat prompt list by category safely
+          const groupMap: { [key: string]: PromptItem[] } = {};
+          res.data.forEach((p) => {
+            const catKey = p.category || "General";
+            if (!groupMap[catKey]) {
+              groupMap[catKey] = [];
             }
-          ]);
+            groupMap[catKey].push({
+              labelEn: p.titleEng || "Legal Query",
+              labelUr: p.titleUrdu || "قانونی سوال",
+              promptEn: p.promptEng || "",
+              promptUr: p.promptUrdu || ""
+            });
+          });
+
+          const transformed: QuickPromptCategory[] = Object.keys(groupMap).map((catName) => {
+            const urduCatName = catName === "Tenancy" ? "کرایہ داری اور بے دخلی"
+              : catName === "Affidavit" ? "بیان حلفی اور تصدیق"
+              : catName === "DigitalSignature" ? "ڈیجیٹل دستخط اور ای کامرس"
+              : catName === "Contracts" ? "معاہدات اور شرائط"
+              : catName === "Evidence" ? "گواہان اور قانون شہادت"
+              : catName;
+
+            return {
+              titleEn: catName,
+              titleUr: urduCatName,
+              icon: "scale",
+              prompts: groupMap[catName] || []
+            };
+          });
+
+          if (transformed.length > 0) {
+            setCategories(transformed);
+          }
         }
       } catch (e) {
-        // use default
+        // Keep default categories
       }
-    }
+    };
 
-    // Fetch user documents if logged in
-    async function loadUserDocs() {
+    const loadUserDocs = async () => {
       if (isAuthenticated) {
         try {
           const res = await apiClient.get<UserDocOption[]>("/api/documents");
-          if (res.success && res.data) {
+          if (res.success && Array.isArray(res.data)) {
             setUserDocuments(res.data);
           }
         } catch (e) {
           // ignore
         }
       }
-    }
+    };
 
     loadPrompts();
     loadUserDocs();
@@ -357,7 +400,7 @@ export default function AiAssistantPage() {
               <p className="text-[11px] text-slate-500">
                 Select one of your drafted documents to get tailored advice on its clauses.
               </p>
-              {userDocuments.length > 0 ? (
+              {userDocuments && userDocuments.length > 0 ? (
                 <select
                   value={selectedDocId || ""}
                   onChange={(e) => setSelectedDocId(e.target.value ? Number(e.target.value) : undefined)}
@@ -391,13 +434,13 @@ export default function AiAssistantPage() {
               </p>
 
               <div className="space-y-3">
-                {categories.map((cat, idx) => (
+                {Array.isArray(categories) && categories.map((cat, idx) => (
                   <div key={idx} className="space-y-1.5">
                     <span className="text-[11px] font-semibold text-slate-700 block">
                       {language === "ur" ? cat.titleUr : cat.titleEn}
                     </span>
                     <div className="space-y-1.5">
-                      {cat.prompts.map((p, pIdx) => (
+                      {Array.isArray(cat?.prompts) && cat.prompts.map((p, pIdx) => (
                         <button
                           key={pIdx}
                           onClick={() => handleSend(language === "ur" ? p.promptUr : p.promptEn)}
@@ -438,7 +481,7 @@ export default function AiAssistantPage() {
           <div className="lg:col-span-8 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[650px]">
             {/* Chat Messages */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/40">
-              {messages.map((m) => (
+              {Array.isArray(messages) && messages.map((m) => (
                 <div
                   key={m.id}
                   className={"flex gap-3 " + (m.sender === "user" ? "justify-end" : "justify-start")}
