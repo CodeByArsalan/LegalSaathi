@@ -1,0 +1,37 @@
+name: Deploy .NET 8 Backend to MonsterASP
+
+on:
+  push:
+    branches: [ master, main ]
+    paths:
+      - 'src/LegalSaathi.Api/**'
+      - '.github/workflows/deploy-backend.yml'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8 SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore src/LegalSaathi.Api/LegalSaathi.Api.csproj
+
+    - name: Build & Publish Release
+      run: dotnet publish src/LegalSaathi.Api/LegalSaathi.Api.csproj -c Release -o ./publish /p:UseAppHost=false
+
+    - name: Deploy via FTP to MonsterASP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./publish/
+        server-dir: /site/wwwroot/
+        dangerous-clean-slate: false

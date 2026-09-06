@@ -69,9 +69,16 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowNextJsClient", policy =>
     {
-        policy.WithOrigins(
-                builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>() 
-                ?? new[] { "http://localhost:3000", "https://legalsaathi.pk" })
+        policy.SetIsOriginAllowed(origin =>
+              {
+                  if (string.IsNullOrWhiteSpace(origin)) return false;
+                  var uri = new Uri(origin);
+                  return uri.Host == "localhost" ||
+                         uri.Host == "127.0.0.1" ||
+                         uri.Host.EndsWith("vercel.app", StringComparison.OrdinalIgnoreCase) ||
+                         uri.Host.EndsWith("legalsaathi.pk", StringComparison.OrdinalIgnoreCase) ||
+                         uri.Host.EndsWith("runasp.net", StringComparison.OrdinalIgnoreCase);
+              })
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -136,25 +143,30 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<SecurityHeadersMiddleware>();
 
-if (app.Environment.IsDevelopment())
+// Always enable Swagger for easy inspection & testing
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Legal Saathi API v1");
-        c.RoutePrefix = "swagger";
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Legal Saathi API v1");
+    c.RoutePrefix = "swagger";
+});
 
 app.UseCors("AllowNextJsClient");
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
-
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Root API Health & Status Endpoint
+app.MapGet("/", () => Results.Ok(new
+{
+    status = "Online",
+    service = "Legal Saathi API · لیگل ساتھی پاکستان",
+    framework = "ASP.NET Core 8 Web API",
+    documentation = "/swagger",
+    timestamp = DateTime.UtcNow
+}));
+
+app.MapGet("/health", () => Results.Ok(new { status = "Healthy", timestamp = DateTime.UtcNow }));
 
 app.MapControllers();
 
