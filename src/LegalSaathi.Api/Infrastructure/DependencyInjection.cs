@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();
         services.AddScoped<ISignatureRepository, SignatureRepository>();
         services.AddScoped<IAIQueryRepository, AIQueryRepository>();
+        services.AddScoped<ILawyerRepository, LawyerRepository>();
 
         // 2. Authentication & Identity
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
@@ -28,14 +29,15 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<ITemplateService, TemplateService>();
+        services.AddScoped<ILawyerReviewService, LawyerReviewService>();
 
         // 3. User Context
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         // 4. AI Service (Free LLMs: Gemini / Groq / Pakistani Knowledge Engine)
-        services.AddHttpClient<IAiLegalAssistantService, AIAssistantService>();
-        services.AddScoped<IAiLegalAssistantService, AIAssistantService>();
+        services.AddHttpClient<IAiLegalAssistantService, FreeAiLegalAssistantService>();
+        services.AddScoped<IAiLegalAssistantService, FreeAiLegalAssistantService>();
 
         // 5. Payment Gateways (Stubs for zero-dependency operation)
         services.AddScoped<IPaymentGateway, JazzCashPaymentGateway>();

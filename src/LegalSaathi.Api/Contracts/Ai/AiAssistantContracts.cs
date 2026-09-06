@@ -11,7 +11,7 @@ public record AiAskResponse(
     string Answer,
     int TotalTokens,
     string Model,
-    long? QueryId = null);
+    long? QueryId);
 
 public record AiQueryHistoryDto(
     long QueryId,
@@ -22,3 +22,12 @@ public record AiQueryHistoryDto(
     int Tokens,
     string ModelUsed,
     DateTime CreatedAt);
+
+public record QuickPromptDto(
+    string Id,
+    string TitleEng,
+    string TitleUrdu,
+    string PromptEng,
+    string PromptUrdu,
+    string Category,
+    string Icon);

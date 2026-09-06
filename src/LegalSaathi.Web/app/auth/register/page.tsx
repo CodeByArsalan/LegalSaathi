@@ -141,6 +141,8 @@ export default function RegisterPage() {
               </div>
               <input
                 type="text"
+                name="fullName"
+                autoComplete="name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="e.g. Muhammad Usman"
@@ -162,6 +164,8 @@ export default function RegisterPage() {
                 </div>
                 <input
                   type="email"
+                  name="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
@@ -181,6 +185,8 @@ export default function RegisterPage() {
                 </div>
                 <input
                   type="text"
+                  name="phoneNumber"
+                  autoComplete="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="03001234567"
@@ -202,6 +208,9 @@ export default function RegisterPage() {
               </div>
               <input
                 type="text"
+                name="userCnic"
+                autoComplete="off"
+                data-lpignore="true"
                 value={cnic}
                 onChange={(e) => handleCnicChange(e.target.value)}
                 placeholder="11111-1111111-1"
@@ -222,6 +231,8 @@ export default function RegisterPage() {
               </div>
               <input
                 type="password"
+                name="password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
