@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: legalsaathi-mssql
+    restart: always
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "YourStrong@Passw0rd2026!"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - legalsaathi-network
+
+volumes:
+  mssql_data:
+    driver: local
+
+networks:
+  legalsaathi-network:
+    driver: bridge

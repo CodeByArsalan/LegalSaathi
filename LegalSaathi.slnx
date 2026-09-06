@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LegalSaathi.Api.Tests/LegalSaathi.Api.Tests.csproj" />
+    <Project Path="src/LegalSaathi.Api/LegalSaathi.Api.csproj" />
+  </Folder>
+</Solution>

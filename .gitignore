@@ -1,0 +1,52 @@
+# .NET / C#
+bin/
+obj/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.pidb
+*.booproj
+*.sln.docstates
+.vs/
+.vscode/
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+build/
+dist/
+.pnp
+.pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment & Secrets (NEVER COMMIT)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+appsettings.Production.json
+appsettings.*.local.json
+*.pfx
+*.key
+*.pem
+secrets.json
+
+# Operating System
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+logs/
+*.log
+_system_generated/
