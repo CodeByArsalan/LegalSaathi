@@ -115,6 +115,11 @@ public class AuthController : ApiControllerBase
             accessToken = cookieAccessToken;
         }
 
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return Ok(ApiResponse<AuthResponse?>.Ok(null, "No active session."));
+        }
+
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = Request.Headers.UserAgent.ToString();
         var effectiveRequest = new RefreshTokenRequest(accessToken, refreshToken);
