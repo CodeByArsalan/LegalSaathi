@@ -391,7 +391,7 @@ INSERT [dbo].[PaymentStatuses] ([PaymentStatusID], [PaymentStatus]) VALUES (2, N
 INSERT [dbo].[PaymentStatuses] ([PaymentStatusID], [PaymentStatus]) VALUES (3, N'Failed')
 INSERT [dbo].[PaymentStatuses] ([PaymentStatusID], [PaymentStatus]) VALUES (4, N'Signed')
 INSERT [dbo].[PaymentStatuses] ([PaymentStatusID], [PaymentStatus]) VALUES (5, N'Refunded')
-INSERT [dbo].[PaymentStatuses] ([PaymentStatusID], [PaymentStatus]) VALUES (6, N'Refunded')
+INSERT [dbo].[PaymentStatuses] ([PaymentStatusID], [PaymentStatus]) VALUES (6, N'Cancelled')
 SET IDENTITY_INSERT [dbo].[PaymentStatuses] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Roles] ON 
