@@ -24,6 +24,7 @@ import { apiClient } from "@/lib/api-client";
 import { DocumentDetail } from "@/features/documents/types";
 import { SignatureModal } from "@/components/signature/SignatureModal";
 import { AiLegalAssistant } from "@/components/ai/AiLegalAssistant";
+import { APP_CONFIG, ROUTES } from "@/lib/constants";
 
 interface SignatureRecord {
   signatureId: number;
@@ -147,7 +148,7 @@ export default function DocumentDetailsPage() {
 
             {/* Download PDF */}
             <a
-              href={"http://localhost:5000/api/documents/" + document.userDocumentId + "/download/pdf"}
+              href={`${APP_CONFIG.apiBaseUrl}/documents/${document.userDocumentId}/download/pdf`}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-700 text-white hover:bg-emerald-800 shadow-sm transition-all"
@@ -157,7 +158,7 @@ export default function DocumentDetailsPage() {
 
             {/* Download Word DOCX */}
             <a
-              href={"http://localhost:5000/api/documents/" + document.userDocumentId + "/download/docx"}
+              href={`${APP_CONFIG.apiBaseUrl}/documents/${document.userDocumentId}/download/docx`}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm transition-all"
@@ -329,7 +330,7 @@ export default function DocumentDetailsPage() {
                 Have a verified High Court advocate review your drafted document, add legal stamps, and verify court compliance.
               </p>
               <button
-                onClick={() => alert("Lawyer review module request registered.")}
+                onClick={() => router.push(`/lawyer-review?docId=${document.userDocumentId}&tab=submit`)}
                 className="w-full py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold text-xs rounded-xl border border-emerald-200 transition-colors"
               >
                 Request Lawyer Review

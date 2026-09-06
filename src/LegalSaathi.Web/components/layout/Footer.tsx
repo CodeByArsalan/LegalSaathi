@@ -27,10 +27,10 @@ export function Footer() {
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-3">Categories</h4>
             <ul className="space-y-2 text-xs">
-              <li><Link href="/templates/personal" className="hover:text-emerald-400 transition-colors">Personal & Family / ذاتی و خاندانی</Link></li>
-              <li><Link href="/templates/real-estate" className="hover:text-emerald-400 transition-colors">Real Estate & Tenancy / کرایہ داری</Link></li>
-              <li><Link href="/templates/business" className="hover:text-emerald-400 transition-colors">Business & Freelance / کاروبار</Link></li>
-              <li><Link href="/templates/vehicles" className="hover:text-emerald-400 transition-colors">Vehicles & Assets / گاڑیاں و اثاثہ جات</Link></li>
+              <li><Link href="/templates?category=1" className="hover:text-emerald-400 transition-colors">Personal & Family / ذاتی و خاندانی</Link></li>
+              <li><Link href="/templates?category=2" className="hover:text-emerald-400 transition-colors">Real Estate & Tenancy / کرایہ داری</Link></li>
+              <li><Link href="/templates?category=3" className="hover:text-emerald-400 transition-colors">Business & Freelance / کاروبار</Link></li>
+              <li><Link href="/templates?category=4" className="hover:text-emerald-400 transition-colors">Vehicles & Assets / گاڑیاں و اثاثہ جات</Link></li>
             </ul>
           </div>
 

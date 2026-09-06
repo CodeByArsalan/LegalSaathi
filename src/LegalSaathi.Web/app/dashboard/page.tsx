@@ -18,6 +18,7 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { apiClient } from "@/lib/api-client";
 import { DocumentSummary } from "@/features/documents/types";
+import { APP_CONFIG } from "@/lib/constants";
 
 export default function UserDashboardPage() {
   const { isAuthenticated, user, isLoading: authLoading } = useAuth();
@@ -185,7 +186,7 @@ export default function UserDashboardPage() {
                             <span>View</span>
                           </Link>
                           <a
-                            href={`/api/documents/${doc.userDocumentId}/download/pdf`}
+                            href={`${APP_CONFIG.apiBaseUrl}/documents/${doc.userDocumentId}/download/pdf`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold text-xs flex items-center gap-1"

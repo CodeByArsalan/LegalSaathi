@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Scale, FileText, ShieldCheck, Sparkles, User as UserIcon, LogOut, FileCode } from "lucide-react";
+import { Scale, FileText, ShieldCheck, Sparkles, LogOut, FileCode, Shield, Building2, Briefcase } from "lucide-react";
 import { LanguageToggle } from "../common/LanguageToggle";
 import { useAuth } from "@/lib/auth-context";
 
@@ -38,6 +38,18 @@ export function Navbar() {
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
             <span>Lawyer Review</span>
           </Link>
+          {isAuthenticated && user?.role === "SuperAdmin" && (
+            <Link href="/admin" className="hover:text-purple-700 text-purple-600 transition-colors flex items-center gap-1.5 font-semibold">
+              <Shield className="w-4 h-4" />
+              <span>Admin Console</span>
+            </Link>
+          )}
+          {isAuthenticated && user?.role === "CorporateAdmin" && (
+            <Link href="/corporate" className="hover:text-blue-700 text-blue-600 transition-colors flex items-center gap-1.5 font-semibold">
+              <Building2 className="w-4 h-4" />
+              <span>Corporate Portal</span>
+            </Link>
+          )}
         </nav>
 
         {/* Actions */}
@@ -60,7 +72,7 @@ export function Navbar() {
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-1.5 z-50 animate-in fade-in zoom-in-95">
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-slate-200 py-1.5 z-50 animate-in fade-in zoom-in-95">
                   <div className="px-3 py-2 border-b border-slate-100">
                     <p className="text-xs font-bold text-slate-900 truncate">{user.fullName}</p>
                     <p className="text-[11px] text-slate-500 truncate">{user.email || user.phoneNumber}</p>
@@ -73,12 +85,42 @@ export function Navbar() {
                     <FileCode className="w-3.5 h-3.5" />
                     <span>My Documents</span>
                   </Link>
+                  {user.role === "SuperAdmin" && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs text-purple-700 hover:bg-purple-50 font-medium"
+                    >
+                      <Shield className="w-3.5 h-3.5" />
+                      <span>Admin Management</span>
+                    </Link>
+                  )}
+                  {user.role === "CorporateAdmin" && (
+                    <Link
+                      href="/corporate"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs text-blue-700 hover:bg-blue-50 font-medium"
+                    >
+                      <Building2 className="w-3.5 h-3.5" />
+                      <span>Corporate Teams</span>
+                    </Link>
+                  )}
+                  {user.role === "Lawyer" && (
+                    <Link
+                      href="/lawyer?tab=assigned-reviews"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs text-emerald-700 hover:bg-emerald-50 font-medium"
+                    >
+                      <Briefcase className="w-3.5 h-3.5" />
+                      <span>Review Requests</span>
+                    </Link>
+                  )}
                   <button
                     onClick={async () => {
                       setDropdownOpen(false);
                       await logout();
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 text-left cursor-pointer"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 text-left cursor-pointer border-t border-slate-100"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>Sign Out / لاگ آؤٹ</span>

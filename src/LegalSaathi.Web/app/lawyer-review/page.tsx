@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ShieldCheck,
@@ -20,7 +21,10 @@ import {
   PlusCircle,
   Info,
   Calendar,
-  ExternalLink
+  ExternalLink,
+  Scale,
+  MessageSquare,
+  CheckCheck
 } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
@@ -73,11 +77,12 @@ interface UserDocOption {
   status: string;
 }
 
-export default function LawyerReviewPage() {
+function LawyerReviewContent() {
+  const searchParams = useSearchParams();
   const { isAuthenticated, user } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<"directory" | "my-reviews" | "submit">("directory");
-  
+  const [activeTab, setActiveTab] = useState<"directory" | "my-reviews" | "submit" | "assigned-reviews">("directory");
+
   // Directory state
   const [lawyers, setLawyers] = useState<LawyerDto[]>([]);
   const [loadingLawyers, setLoadingLawyers] = useState(true);
@@ -85,9 +90,19 @@ export default function LawyerReviewPage() {
   const [selectedProvince, setSelectedProvince] = useState("all");
   const [selectedSpecialization, setSelectedSpecialization] = useState("all");
 
-  // Reviews state
+  // Client Reviews state
   const [myReviews, setMyReviews] = useState<LawyerReviewDto[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
+
+  // Advocate Assigned Reviews state
+  const [assignedReviews, setAssignedReviews] = useState<LawyerReviewDto[]>([]);
+  const [loadingAssigned, setLoadingAssigned] = useState(false);
+  const [selectedAssignedReview, setSelectedAssignedReview] = useState<LawyerReviewDto | null>(null);
+  const [feedbackNotes, setFeedbackNotes] = useState("");
+  const [feedbackStatusId, setFeedbackStatusId] = useState<number>(5); // Default 5: ApprovedAndStamped
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  const [feedbackSuccess, setFeedbackSuccess] = useState<string | null>(null);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
 
   // Submit state
   const [userDocs, setUserDocs] = useState<UserDocOption[]>([]);
@@ -98,12 +113,28 @@ export default function LawyerReviewPage() {
   const [submitSuccessMsg, setSubmitSuccessMsg] = useState<string | null>(null);
   const [submitErrorMsg, setSubmitErrorMsg] = useState<string | null>(null);
 
+  // Read URL search params
+  useEffect(() => {
+    const docParam = searchParams.get("docId");
+    const tabParam = searchParams.get("tab");
+
+    if (tabParam === "submit" || tabParam === "my-reviews" || tabParam === "directory" || tabParam === "assigned-reviews") {
+      setActiveTab(tabParam as any);
+    }
+    if (docParam) {
+      const parsedId = parseInt(docParam, 10);
+      if (!isNaN(parsedId)) {
+        setSubmitDocId(parsedId);
+      }
+    }
+  }, [searchParams]);
+
   // Load Lawyers Directory
   useEffect(() => {
     async function fetchLawyers() {
       setLoadingLawyers(true);
       try {
-        let queryParams = [];
+        const queryParams = [];
         if (selectedProvince !== "all") queryParams.push("province=" + encodeURIComponent(selectedProvince));
         if (selectedSpecialization !== "all") queryParams.push("specialization=" + encodeURIComponent(selectedSpecialization));
         const qs = queryParams.length ? "?" + queryParams.join("&") : "";
@@ -125,6 +156,8 @@ export default function LawyerReviewPage() {
   useEffect(() => {
     if (activeTab === "my-reviews" && isAuthenticated) {
       loadMyReviews();
+    } else if (activeTab === "assigned-reviews" && isAuthenticated) {
+      loadAssignedReviews();
     }
   }, [activeTab, isAuthenticated]);
 
@@ -156,6 +189,20 @@ export default function LawyerReviewPage() {
       // ignore
     } finally {
       setLoadingReviews(false);
+    }
+  };
+
+  const loadAssignedReviews = async () => {
+    setLoadingAssigned(true);
+    try {
+      const res = await apiClient.get<LawyerReviewDto[]>("/api/lawyers/reviews/assigned");
+      if (res.success && res.data) {
+        setAssignedReviews(res.data);
+      }
+    } catch (e) {
+      // ignore
+    } finally {
+      setLoadingAssigned(false);
     }
   };
 
@@ -200,6 +247,37 @@ export default function LawyerReviewPage() {
     }
   };
 
+  const handleSubmitAdvocateFeedback = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAssignedReview) return;
+
+    setIsSubmittingFeedback(true);
+    setFeedbackSuccess(null);
+    setFeedbackError(null);
+
+    try {
+      const res = await apiClient.put<boolean>(`/api/lawyers/reviews/${selectedAssignedReview.reviewId}/feedback`, {
+        lawyerNotes: feedbackNotes,
+        statusId: feedbackStatusId
+      });
+
+      if (res.success) {
+        setFeedbackSuccess("Advocate review notes and legal compliance status updated successfully!");
+        setTimeout(() => {
+          setSelectedAssignedReview(null);
+          setFeedbackNotes("");
+          loadAssignedReviews();
+        }, 1200);
+      } else {
+        setFeedbackError(res.message || "Failed to submit advocate feedback.");
+      }
+    } catch (err: any) {
+      setFeedbackError(err.message || "Error submitting feedback.");
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
+  };
+
   const filteredLawyers = lawyers.filter((l) => {
     const q = searchTerm.toLowerCase();
     return (
@@ -215,12 +293,14 @@ export default function LawyerReviewPage() {
       case 1: // Requested
         return <span className="text-xs bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full border border-amber-200">Pending Assignment</span>;
       case 2: // Assigned
-      case 3: // InReview
+      case 3: // InReview / InProgress
         return <span className="text-xs bg-sky-100 text-sky-800 font-bold px-2.5 py-1 rounded-full border border-sky-200">In Review</span>;
-      case 4: // Approved
+      case 4: // ChangesSuggested
+        return <span className="text-xs bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded-full border border-amber-300">Changes Suggested</span>;
+      case 5: // ApprovedAndStamped
         return <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full border border-emerald-200">Certified Compliant</span>;
-      case 5: // Rejected
-        return <span className="text-xs bg-rose-100 text-rose-800 font-bold px-2.5 py-1 rounded-full border border-rose-200">Changes Required</span>;
+      case 6: // Rejected
+        return <span className="text-xs bg-rose-100 text-rose-800 font-bold px-2.5 py-1 rounded-full border border-rose-200">Rejected</span>;
       default:
         return <span className="text-xs bg-purple-100 text-purple-800 font-bold px-2.5 py-1 rounded-full border border-purple-200">{statusName}</span>;
     }
@@ -250,8 +330,8 @@ export default function LawyerReviewPage() {
             </div>
           </div>
 
-          {/* Tab Selection */}
-          <div className="flex items-center bg-slate-800/90 p-1 rounded-xl border border-slate-700 text-xs font-semibold">
+          {/* Tab Navigation */}
+          <div className="flex flex-wrap items-center bg-slate-800/90 p-1 rounded-xl border border-slate-700 text-xs font-semibold gap-1">
             <button
               onClick={() => setActiveTab("directory")}
               className={"px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 " + (activeTab === "directory" ? "bg-emerald-600 text-white shadow-sm" : "text-slate-400 hover:text-white")}
@@ -272,6 +352,13 @@ export default function LawyerReviewPage() {
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>Submit Document</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("assigned-reviews")}
+              className={"px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 " + (activeTab === "assigned-reviews" ? "bg-emerald-600 text-white shadow-sm" : "text-slate-400 hover:text-white")}
+            >
+              <Scale className="w-3.5 h-3.5" />
+              <span>Advocate Workspace</span>
             </button>
           </div>
         </div>
@@ -654,7 +741,210 @@ export default function LawyerReviewPage() {
             </form>
           </div>
         )}
+
+        {/* TAB 4: ADVOCATE REVIEWER WORKSPACE */}
+        {activeTab === "assigned-reviews" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <Scale className="w-4 h-4 text-emerald-700" />
+                  Advocate Assigned Document Review Queue
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Inspect submitted legal contracts, examine client instructions, and issue certified compliance or suggested revisions.
+                </p>
+              </div>
+              <button
+                onClick={loadAssignedReviews}
+                className="px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors"
+              >
+                Refresh Queue
+              </button>
+            </div>
+
+            {loadingAssigned ? (
+              <div className="text-center py-16">
+                <div className="w-8 h-8 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                <p className="text-xs text-slate-500">Loading assigned review tickets...</p>
+              </div>
+            ) : assignedReviews.length === 0 ? (
+              <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm space-y-2">
+                <Scale className="w-8 h-8 text-slate-400 mx-auto" />
+                <p className="text-sm font-bold text-slate-800">No Review Requests In Your Queue</p>
+                <p className="text-xs text-slate-500">
+                  New documents submitted by clients for your bar specialization will appear here.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {assignedReviews.map((rev) => (
+                  <div
+                    key={rev.reviewId}
+                    className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-bold text-slate-900">
+                            {rev.documentTitle || rev.templateTitleEn}
+                          </h3>
+                          <span className="text-[11px] text-slate-400 font-mono">
+                            #REV-{rev.reviewId}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500">
+                          Client: <span className="font-semibold text-slate-700">{rev.clientName}</span> • Template: {rev.templateTitleEn}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {getStatusBadge(rev.statusName, rev.statusId)}
+                        <span className="text-[11px] text-slate-400">
+                          {new Date(rev.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1.5 text-xs">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                        Client Inquiries & Concerns
+                      </span>
+                      <p className="text-slate-800 italic">
+                        {rev.notes || "No special instructions provided by client."}
+                      </p>
+                    </div>
+
+                    {rev.lawyerNotes && (
+                      <div className="bg-emerald-50/70 border border-emerald-200 p-3 rounded-xl text-xs space-y-1">
+                        <span className="font-bold text-emerald-900 text-[11px] block">
+                          Current Advocate Assessment:
+                        </span>
+                        <p className="text-emerald-950 whitespace-pre-wrap">{rev.lawyerNotes}</p>
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                      <Link
+                        href={`/documents/${rev.userDocumentId}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline"
+                      >
+                        <FileText className="w-3.5 h-3.5" /> View Draft Document & Form Answers &rarr;
+                      </Link>
+
+                      <button
+                        onClick={() => {
+                          setSelectedAssignedReview(rev);
+                          setFeedbackNotes(rev.lawyerNotes || "");
+                          setFeedbackStatusId(rev.statusId === 1 || rev.statusId === 2 ? 5 : rev.statusId);
+                        }}
+                        className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Provide Advocate Feedback / Stamp</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Modal: Advocate Feedback Submission */}
+            {selectedAssignedReview && (
+              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl border border-slate-200 space-y-5">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900">
+                        Advocate Legal Review & Stamping
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Reviewing {selectedAssignedReview.documentTitle} for {selectedAssignedReview.clientName}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setSelectedAssignedReview(null)}
+                      className="text-slate-400 hover:text-slate-600 text-lg font-bold"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {feedbackSuccess && (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>{feedbackSuccess}</span>
+                    </div>
+                  )}
+
+                  {feedbackError && (
+                    <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>{feedbackError}</span>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSubmitAdvocateFeedback} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-800 block">
+                        Compliance Assessment Status *
+                      </label>
+                      <select
+                        value={feedbackStatusId}
+                        onChange={(e) => setFeedbackStatusId(Number(e.target.value))}
+                        className="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      >
+                        <option value={5}>Certified Compliant & Approved (LawyerApproved)</option>
+                        <option value={4}>Changes / Revisions Suggested</option>
+                        <option value={6}>Rejected (Non-Compliant)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-800 block">
+                        Advocate Legal Opinion & Notes *
+                      </label>
+                      <textarea
+                        rows={5}
+                        required
+                        value={feedbackNotes}
+                        onChange={(e) => setFeedbackNotes(e.target.value)}
+                        placeholder="State your formal legal advice, e.g. Document reviewed against Contract Act 1872 and Punjab Tenancy Ordinance. All terms are standard and legally enforceable in courts of law."
+                        className="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedAssignedReview(null)}
+                        className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmittingFeedback}
+                        className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-1.5"
+                      >
+                        {isSubmittingFeedback ? "Updating..." : "Submit Advocate Opinion"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+export default function LawyerReviewPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-xs text-slate-500">Loading lawyer review portal...</div>}>
+      <LawyerReviewContent />
+    </Suspense>
   );
 }

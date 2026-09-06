@@ -399,6 +399,34 @@ public class FreeAiLegalAssistantService : IAiLegalAssistantService
                    "⚖️ *Drafting Rule:* Ensure facts are sworn on personal knowledge, without ambiguous hearsay assertions.";
         }
 
+        // 7.1 STAMP DUTY & STAMP PAPER (Stamp Act 1899)
+        if (p.Contains("stamp") || p.Contains("اسٹامپ") || p.Contains("ڈیوٹی") || p.Contains("چالان"))
+        {
+            if (isUrdu)
+            {
+                return "📜 **اسٹامپ پیپر اور اسٹامپ ڈیوٹی کے قانونی تقاضے (Stamp Act 1899 & Provincial e-Stamp Rules):**\n\n" +
+                       "1. **ای-اسٹامپ پیپر (e-Stamp Paper):**\n" +
+                       "   - پاکستان کے تمام صوبوں (پنجاب، سندھ، خیبر پختونخوا اور اسلام آباد) میں اب ای-اسٹامپ پیپر کا استعمال لازمی ہے۔ ہر ای-اسٹامپ پر تصدیق کے لیے ایک منفرد بارکوڈ اور 16 ہندسوں کا چالان نمبر ہوتا ہے۔\n\n" +
+                       "2. **اسٹامپ ڈیوٹی کا حساب:**\n" +
+                       "   - **بیان حلفی و اقرار نامے:** نان جوڈیشل ای-اسٹامپ پیپر (100 روپے یا 1200 روپے)۔\n" +
+                       "   - **جائیداد اور بیع نامہ:** ڈی سی ریٹ (DC Valuation Table) کے مطابق صوبائی حکومت کا مقررہ فیصد (عام طور پر 1% تا 3%) اور چالان فارم 32-A۔\n" +
+                       "   - **کرایہ داری معاہدہ:** سالانہ کرایہ کی مالیت پر صوبائی قوانین کے مطابق اسٹامپ ڈیوٹی۔\n\n" +
+                       "3. **عدالتی قبولیت (Judicial Admissibility):**\n" +
+                       "   - اسٹامپ ایکٹ 1899 کے سیکشن 35 کے تحت مناسب اسٹامپ ڈیوٹی کے بغیر تیار کردہ کوئی بھی معاہدہ یا اقرار نامہ عدالت میں بطور ثبوت ناقابل قبول ہوتا ہے۔\n\n" +
+                       "💡 *مشورہ:* اپنے تمام قانونی معاہدات کے لیے لیگل ساتھی سے مستند ای-اسٹامپ شیڈول کی معلومات حاصل کریں۔";
+            }
+            return "📜 **Stamp Paper & Stamp Duty Framework (Stamp Act 1899 & Provincial e-Stamp Rules):**\n\n" +
+                   "1. **Provincial e-Stamp System:**\n" +
+                   "   - All provincial governments (Punjab, Sindh, KPK, ICT) mandate electronic e-Stamp papers with unique 16-digit verification codes to prevent fraud.\n\n" +
+                   "2. **Schedule of Stamp Duty Rates:**\n" +
+                   "   - **Affidavits & General Undertakings:** Rs. 100 to Rs. 1,200 non-judicial e-Stamp.\n" +
+                   "   - **Sale Deeds & Immovable Property Transfers:** Calculated on official Deputy Commissioner (DC) Valuation Tables via Form 32-A Challan.\n" +
+                   "   - **Rent & Tenancy Agreements:** Scaled based on annual rental value under provincial Stamp Schedules.\n\n" +
+                   "3. **Judicial Inadmissibility of Unstamped Documents (Section 35):**\n" +
+                   "   - Under Section 35 of the Stamp Act 1899, any instrument not duly stamped is inadmissible as evidence in court until the deficit duty and penalties are discharged.\n\n" +
+                   "💡 *Recommendation:* Ensure all agreements are printed on verified provincial e-Stamp sheets before execution.";
+        }
+
         // 8. FAMILY LAW: DIVORCE, KHULA, NIKAHNAMA, DOWER
         if (p.Contains("divorce") || p.Contains("talaq") || p.Contains("khula") || p.Contains("marriage") || 
             p.Contains("nikah") || p.Contains("custody") || p.Contains("طلاق") || p.Contains("خلع") || p.Contains("نکاح") || p.Contains("حق مہر"))

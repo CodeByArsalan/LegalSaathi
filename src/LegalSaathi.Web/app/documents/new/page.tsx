@@ -28,26 +28,53 @@ function NewDocumentContent() {
       }
 
       try {
-        // 1. Fetch template
-        const tRes = await apiClient.get<TemplateDetail>(`/api/templates/${templateSlug}`);
+        setIsProcessing(true);
+        setStatusText("Preparing document draft...");
+
+        // 1. Check for draft answers in sessionStorage
+        let draftData: {
+          templateId?: number;
+          templateSlug?: string;
+          title?: string;
+          formAnswers?: Record<string, string>;
+        } | null = null;
+
+        try {
+          const rawDraft = sessionStorage.getItem("legalsaathi_draft");
+          if (rawDraft) {
+            draftData = JSON.parse(rawDraft);
+          }
+        } catch (e) {
+          console.warn("Failed to parse draft from sessionStorage", e);
+        }
+
+        const effectiveSlug = draftData?.templateSlug || templateSlug;
+
+        // 2. Fetch template details
+        const tRes = await apiClient.get<TemplateDetail>(`/api/templates/${effectiveSlug}`);
         if (!tRes.success || !tRes.data) {
           setErrorMsg("Template not found.");
+          setIsProcessing(false);
           return;
         }
         setTemplate(tRes.data);
 
-        setIsProcessing(true);
+        // 3. Prepare Form Answers Payload
+        const effectiveAnswers = draftData?.formAnswers || {
+          DeponentName: user?.fullName || "Muhammad Ali",
+          Cnic: user?.cnic || "35201-1234567-1",
+          AffidavitStatement: "Solemn affirmation executed for official verification purposes."
+        };
+
+        const docTitle = draftData?.title || tRes.data.titleEn;
+
         setStatusText("Saving document in secure database...");
 
-        // 2. Create Draft Document in Database
+        // 4. Create Draft Document in Database
         const createRes = await apiClient.post<DocumentDetail>("/api/documents", {
           templateId: tRes.data.templateId,
-          title: tRes.data.titleEn,
-          formAnswers: {
-            DeponentName: user?.fullName || "Muhammad Ali",
-            Cnic: user?.cnic || "35201-1234567-1",
-            AffidavitStatement: "Solemn affirmation executed for official verification purposes."
-          }
+          title: docTitle,
+          formAnswers: effectiveAnswers
         });
 
         if (!createRes.success || !createRes.data) {
@@ -59,12 +86,14 @@ function NewDocumentContent() {
         const docId = createRes.data.userDocumentId;
         setStatusText("Generating court-compliant QuestPDF & OpenXML DOCX...");
 
-        // 3. Trigger PDF & DOCX Generation
+        // 5. Trigger PDF & DOCX Generation
         const genRes = await apiClient.post<GenerateDocumentResponse>(`/api/documents/${docId}/generate`, {
           language: "bilingual"
         });
 
         if (genRes.success) {
+          // Clean up draft storage
+          sessionStorage.removeItem("legalsaathi_draft");
           setStatusText("Document generated and sealed with SHA-256 hash!");
           setTimeout(() => {
             router.push(`/documents/${docId}`);

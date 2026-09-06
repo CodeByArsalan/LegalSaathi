@@ -1,17 +1,29 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Search, FileText, ArrowRight, ShieldCheck, Scale, Sparkles, Filter, CheckCircle2 } from "lucide-react";
 import { TemplateCategory, TemplateSummary } from "@/features/templates/types";
 import { apiClient } from "@/lib/api-client";
 
-export default function TemplatesCatalogPage() {
+function TemplatesCatalogContent() {
+  const searchParams = useSearchParams();
   const [categories, setCategories] = useState<TemplateCategory[]>([]);
   const [templates, setTemplates] = useState<TemplateSummary[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const cat = searchParams.get("category");
+    if (cat) {
+      const parsed = parseInt(cat, 10);
+      if (!isNaN(parsed)) {
+        setSelectedCategory(parsed);
+      }
+    }
+  }, [searchParams]);
 
   // Fallback initial data in case of development offline state
   const fallbackCategories: TemplateCategory[] = [
@@ -319,5 +331,13 @@ export default function TemplatesCatalogPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function TemplatesCatalogPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-xs text-slate-500">Loading templates library...</div>}>
+      <TemplatesCatalogContent />
+    </Suspense>
   );
 }
