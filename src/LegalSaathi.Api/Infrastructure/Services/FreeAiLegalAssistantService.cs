@@ -78,8 +78,8 @@ public class FreeAiLegalAssistantService : IAiLegalAssistantService
 
             try
             {
-                var effectiveModel = !string.IsNullOrWhiteSpace(configuredModel) ? configuredModel : "meta-llama/llama-3.3-70b-instruct:free";
-                answer = await CallExternalFreeLlmAsync(externalApiUrl, externalApiKey, effectiveModel, prompt, lang, request.FormContextJson, cancellationToken);
+                var effectiveModel = !string.IsNullOrWhiteSpace(configuredModel) ? configuredModel : "openai/gpt-oss-120b";
+                answer = await CallExternalFreeLlmWithFallbacksAsync(externalApiUrl, externalApiKey, effectiveModel, prompt, lang, request.FormContextJson, cancellationToken);
                 modelUsed = effectiveModel;
             }
             catch (Exception ex)
@@ -144,12 +144,57 @@ public class FreeAiLegalAssistantService : IAiLegalAssistantService
         return Regex.IsMatch(text, @"[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]");
     }
 
+    private async Task<string> CallExternalFreeLlmWithFallbacksAsync(string apiUrl, string apiKey, string initialModel, string prompt, string lang, string? contextJson, CancellationToken ct)
+    {
+        var modelsToTry = new List<string> { initialModel };
+        
+        if (apiUrl.Contains("groq.com", StringComparison.OrdinalIgnoreCase))
+        {
+            var groqAlternatives = new[] { "openai/gpt-oss-120b", "qwen/qwen3.8-27b", "openai/gpt-oss-20b", "groq/compound" };
+            foreach (var alt in groqAlternatives)
+            {
+                if (!modelsToTry.Contains(alt, StringComparer.OrdinalIgnoreCase))
+                    modelsToTry.Add(alt);
+            }
+        }
+        else if (apiUrl.Contains("openrouter.ai", StringComparison.OrdinalIgnoreCase))
+        {
+            var orAlternatives = new[] { "meta-llama/llama-3.3-70b-instruct:free", "deepseek/deepseek-r1:free", "google/gemini-2.0-flash-exp:free" };
+            foreach (var alt in orAlternatives)
+            {
+                if (!modelsToTry.Contains(alt, StringComparer.OrdinalIgnoreCase))
+                    modelsToTry.Add(alt);
+            }
+        }
+
+        Exception? lastEx = null;
+        foreach (var model in modelsToTry)
+        {
+            try
+            {
+                return await CallExternalFreeLlmAsync(apiUrl, apiKey, model, prompt, lang, contextJson, ct);
+            }
+            catch (Exception ex)
+            {
+                lastEx = ex;
+                _logger.LogWarning("Model {Model} failed on {Url}. Trying next available model.", model, apiUrl);
+            }
+        }
+
+        throw lastEx ?? new InvalidOperationException("All external LLM model endpoints failed.");
+    }
+
     private async Task<string> CallExternalFreeLlmAsync(string apiUrl, string apiKey, string model, string prompt, string lang, string? contextJson, CancellationToken ct)
     {
         using var httpRequest = new HttpRequestMessage(HttpMethod.Post, apiUrl);
         httpRequest.Headers.Add("Authorization", $"Bearer {apiKey}");
+        if (apiUrl.Contains("openrouter", StringComparison.OrdinalIgnoreCase))
+        {
+            httpRequest.Headers.TryAddWithoutValidation("HTTP-Referer", "https://legalsaathi.pk");
+            httpRequest.Headers.TryAddWithoutValidation("X-Title", "Legal Saathi Pakistan");
+        }
 
-        var systemPrompt = "You are Legal Saathi, an expert AI legal advisor for Pakistan. Provide structured, authoritative, statutory legal advice referencing Pakistani statutes (Contract Act 1872, Registration Act 1908, Stamp Act 1899, Transfer of Property Act 1882, Qanun-e-Shahadat 1984, Rent Restriction Acts, PPC 1860, Family Laws Ordinance 1961). Format with clear numbered headings, checklists, and statutory warnings. Answer in the same language as the prompt (Urdu or English).";
+        var systemPrompt = "You are Legal Saathi, an expert AI legal advisor for Pakistan. Provide structured, authoritative, statutory legal advice referencing Pakistani statutes (Contract Act 1872, Registration Act 1908, Stamp Act 1899, Transfer of Property Act 1882, Qanun-e-Shahadat 1984, Rent Restriction Acts, PPC 1860, Family Laws Ordinance 1961, Domicile and National Status laws). Format with clear numbered headings, checklists, and statutory warnings. Answer in the same language as the prompt (Urdu or English).";
         var userContent = string.IsNullOrWhiteSpace(contextJson) ? prompt : $"Document Context: {contextJson}\n\nQuestion: {prompt}";
 
         var payload = new
@@ -161,12 +206,17 @@ public class FreeAiLegalAssistantService : IAiLegalAssistantService
                 new { role = "user", content = userContent }
             },
             temperature = 0.3,
-            max_tokens = 1200
+            max_tokens = 1400
         };
 
         httpRequest.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
         var response = await _httpClient.SendAsync(httpRequest, ct);
-        response.EnsureSuccessStatusCode();
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            var errContent = await response.Content.ReadAsStringAsync(ct);
+            throw new HttpRequestException($"HTTP {(int)response.StatusCode} {response.ReasonPhrase}: {errContent}");
+        }
 
         var json = await response.Content.ReadAsStringAsync(ct);
         using var doc = JsonDocument.Parse(json);
