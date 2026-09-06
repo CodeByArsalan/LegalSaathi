@@ -28,13 +28,6 @@ class ApiClient {
     this.baseUrl = APP_CONFIG.apiBaseUrl;
   }
 
-  private getAuthToken(): string | null {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("legal_saathi_access_token") || localStorage.getItem("ls_access_token");
-    }
-    return null;
-  }
-
   async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     const cleanBase = this.baseUrl.replace(/\/+$/, "");
     let cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
@@ -42,23 +35,48 @@ class ApiClient {
       cleanEndpoint = cleanEndpoint.substring(4);
     }
     const url = `${cleanBase}${cleanEndpoint}`;
-    const token = this.getAuthToken();
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       ...(options.headers as Record<string, string>),
     };
 
-    if (token && !headers["Authorization"]) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
-
     try {
-      const response = await fetch(url, {
+      let response = await fetch(url, {
         ...options,
+        credentials: "include", // Pure HttpOnly cookie authentication
         headers,
       });
+
+      // If 401 Unauthorized occurs on a non-auth endpoint, attempt a silent token refresh via HttpOnly cookie
+      if (
+        response.status === 401 &&
+        !cleanEndpoint.includes("/auth/login") &&
+        !cleanEndpoint.includes("/auth/refresh-token") &&
+        !cleanEndpoint.includes("/auth/register") &&
+        !cleanEndpoint.includes("/auth/verify-email")
+      ) {
+        try {
+          const refreshUrl = `${cleanBase}/auth/refresh-token`;
+          const refreshRes = await fetch(refreshUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+            credentials: "include",
+          });
+
+          if (refreshRes.ok) {
+            // Retry original request with refreshed HttpOnly cookie
+            response = await fetch(url, {
+              ...options,
+              credentials: "include",
+              headers,
+            });
+          }
+        } catch {
+          // Ignore silent refresh error and let normal 401 flow handle it
+        }
+      }
 
       const json: ApiResponse<T> = await response.json();
 

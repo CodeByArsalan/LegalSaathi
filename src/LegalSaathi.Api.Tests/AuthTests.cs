@@ -227,6 +227,14 @@ public class AuthTests
         Assert.NotNull(successLogin.Data);
         Assert.NotEmpty(successLogin.Data.AccessToken);
         Assert.NotEmpty(successLogin.Data.RefreshToken);
+
+        // 6. Refresh Token flow on page refresh (HttpOnly cookie simulation)
+        var refreshResult = await authService.RefreshTokenAsync(new Contracts.Auth.RefreshTokenRequest(RefreshToken: successLogin.Data.RefreshToken));
+        Assert.True(refreshResult.Succeeded, string.Join(", ", refreshResult.Errors));
+        Assert.NotNull(refreshResult.Data);
+        Assert.NotEmpty(refreshResult.Data.AccessToken);
+        Assert.NotEmpty(refreshResult.Data.RefreshToken);
+        Assert.NotEqual(successLogin.Data.RefreshToken, refreshResult.Data.RefreshToken); // Rotated token
     }
 }
 
@@ -270,6 +278,9 @@ class InMemoryTestUserRepo : LegalSaathi.Api.Application.Common.Interfaces.IUser
         user.RefreshTokenExpiryDateTime = expiryTime;
         return Task.FromResult(true);
     }
+
+    public Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken ct = default) =>
+        Task.FromResult(_users.FirstOrDefault(u => !string.IsNullOrEmpty(u.RefreshToken) && u.RefreshToken.Equals(refreshToken, StringComparison.Ordinal)));
 
     public Task<bool> VerifyEmailAsync(int userId, CancellationToken ct = default)
     {

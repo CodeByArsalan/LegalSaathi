@@ -10,5 +10,6 @@ public interface IUserRepository
     Task<User?> GetByEmailOrPhoneAsync(string identifier, CancellationToken ct = default);
     Task<bool> UpdateUserAsync(int userId, string name, string phone, string? cnic, CancellationToken ct = default);
     Task<bool> UpdateRefreshTokenAsync(int userId, string refreshToken, DateTime expiryTime, CancellationToken ct = default);
+    Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken ct = default);
     Task<bool> VerifyEmailAsync(int userId, CancellationToken ct = default);
 }

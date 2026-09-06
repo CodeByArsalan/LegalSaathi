@@ -48,6 +48,12 @@ public class AuthController : ApiControllerBase
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = Request.Headers.UserAgent.ToString();
         var result = await _authService.VerifyEmailAsync(request, ip, userAgent, ct);
+
+        if (result.Succeeded && result.Data != null)
+        {
+            SetAuthCookies(result.Data.AccessToken, result.Data.RefreshToken, result.Data.ExpiresAt);
+        }
+
         return HandleResult(result);
     }
 
@@ -76,26 +82,54 @@ public class AuthController : ApiControllerBase
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = Request.Headers.UserAgent.ToString();
         var result = await _authService.LoginAsync(request, ip, userAgent, ct);
+
+        if (result.Succeeded && result.Data != null)
+        {
+            SetAuthCookies(result.Data.AccessToken, result.Data.RefreshToken, result.Data.ExpiresAt);
+        }
+
         return HandleResult(result);
     }
 
     /// <summary>
     /// Exchange an expired access token and valid refresh token for a fresh token pair
+    /// Supports both request body and secure HttpOnly cookie exchange (ideal for page refresh)
     /// </summary>
     [HttpPost("refresh-token")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ApiResponse<AuthResponse>>> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken ct)
+    public async Task<ActionResult<ApiResponse<AuthResponse>>> RefreshToken([FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] RefreshTokenRequest? request, CancellationToken ct)
     {
+        var refreshToken = request?.RefreshToken;
+        var accessToken = request?.AccessToken;
+
+        // Fallback to HttpOnly cookies if not provided in JSON request body
+        if (string.IsNullOrWhiteSpace(refreshToken) && Request.Cookies.TryGetValue("legal_saathi_refresh_token", out var cookieRefreshToken))
+        {
+            refreshToken = cookieRefreshToken;
+        }
+
+        if (string.IsNullOrWhiteSpace(accessToken) && Request.Cookies.TryGetValue("legal_saathi_access_token", out var cookieAccessToken))
+        {
+            accessToken = cookieAccessToken;
+        }
+
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = Request.Headers.UserAgent.ToString();
-        var result = await _authService.RefreshTokenAsync(request, ip, userAgent, ct);
+        var effectiveRequest = new RefreshTokenRequest(accessToken, refreshToken);
+        var result = await _authService.RefreshTokenAsync(effectiveRequest, ip, userAgent, ct);
+
+        if (result.Succeeded && result.Data != null)
+        {
+            SetAuthCookies(result.Data.AccessToken, result.Data.RefreshToken, result.Data.ExpiresAt);
+        }
+
         return HandleResult(result);
     }
 
     /// <summary>
-    /// Revoke the active refresh token and sign out
+    /// Revoke the active refresh token and sign out (clears secure HttpOnly cookies)
     /// </summary>
     [HttpPost("revoke-token")]
     [Authorize]
@@ -103,16 +137,57 @@ public class AuthController : ApiControllerBase
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse>> RevokeToken(CancellationToken ct)
     {
+        ClearAuthCookies();
+
         var userId = _currentUserService.UserId;
         if (!userId.HasValue)
         {
-            return Unauthorized(ApiResponse<object>.Fail("User is not authenticated.", 401));
+            return Ok(ApiResponse<object>.Ok(new { }, "Logged out successfully."));
         }
 
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = Request.Headers.UserAgent.ToString();
         var result = await _authService.RevokeTokenAsync(userId.Value, ip, userAgent, ct);
         return HandleResult(result);
+    }
+
+    private void SetAuthCookies(string accessToken, string refreshToken, DateTime expiresAt)
+    {
+        var isHttps = Request.IsHttps;
+        var accessCookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = isHttps,
+            SameSite = SameSiteMode.Lax,
+            Expires = expiresAt,
+            Path = "/"
+        };
+
+        var refreshCookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = isHttps,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTime.UtcNow.AddDays(7),
+            Path = "/"
+        };
+
+        Response.Cookies.Append("legal_saathi_access_token", accessToken, accessCookieOptions);
+        Response.Cookies.Append("legal_saathi_refresh_token", refreshToken, refreshCookieOptions);
+    }
+
+    private void ClearAuthCookies()
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = Request.IsHttps,
+            SameSite = SameSiteMode.Lax,
+            Path = "/"
+        };
+
+        Response.Cookies.Delete("legal_saathi_access_token", cookieOptions);
+        Response.Cookies.Delete("legal_saathi_refresh_token", cookieOptions);
     }
 
     /// <summary>

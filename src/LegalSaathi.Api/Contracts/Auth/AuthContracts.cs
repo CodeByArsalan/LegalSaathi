@@ -42,8 +42,8 @@ public record AuthResponse(
     DateTime ExpiresAt);
 
 public record RefreshTokenRequest(
-    string AccessToken,
-    string RefreshToken);
+    string? AccessToken = null,
+    string? RefreshToken = null);
 
 public record RevokeTokenRequest(
     string? RefreshToken);

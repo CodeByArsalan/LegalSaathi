@@ -173,7 +173,7 @@ public class AuthService : IAuthService
             newValuesJson: System.Text.Json.JsonSerializer.Serialize(new { user.Email, IsEmailVerified = true, VerifiedAt = DateTime.UtcNow }),
             ct: ct);
 
-        var expiresAt = DateTime.UtcNow.AddMinutes(60);
+        var expiresAt = DateTime.UtcNow.AddMinutes(15);
         return Result<AuthResponse>.Success(new AuthResponse(
             UserId: user.UserID,
             FullName: user.Name,
@@ -273,7 +273,7 @@ public class AuthService : IAuthService
             userAgent: userAgent,
             ct: ct);
 
-        var expiresAt = DateTime.UtcNow.AddMinutes(60);
+        var expiresAt = DateTime.UtcNow.AddMinutes(15);
         return Result<AuthResponse>.Success(new AuthResponse(
             UserId: user.UserID,
             FullName: user.Name,
@@ -288,38 +288,43 @@ public class AuthService : IAuthService
 
     public async Task<Result<AuthResponse>> RefreshTokenAsync(RefreshTokenRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(request.AccessToken) || string.IsNullOrWhiteSpace(request.RefreshToken))
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
         {
-            return Result<AuthResponse>.Failure("Access token and refresh token are required.");
+            return Result<AuthResponse>.Failure("Refresh token is required.");
         }
 
-        var principal = _jwtTokenGenerator.GetPrincipalFromExpiredToken(request.AccessToken);
-        if (principal == null)
+        var incomingRefreshToken = request.RefreshToken.Trim();
+        User? user = null;
+
+        // If access token was supplied, try reading user claims from it
+        if (!string.IsNullOrWhiteSpace(request.AccessToken))
         {
-            return Result<AuthResponse>.Failure("Invalid token.");
+            var principal = _jwtTokenGenerator.GetPrincipalFromExpiredToken(request.AccessToken);
+            if (principal != null)
+            {
+                var userIdClaim = principal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                                  ?? principal.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+                {
+                    user = await _userRepository.GetByIdAsync(userId, ct);
+                }
+            }
         }
 
-        var userIdClaim = principal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                          ?? principal.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
-
-        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+        // If user wasn't resolved from access token, lookup directly by refresh token in database
+        if (user == null)
         {
-            return Result<AuthResponse>.Failure("Invalid token payload.");
-        }
-
-        var user = await _userRepository.GetByEmailOrPhoneAsync(principal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "", ct);
-        if (user == null || user.UserID != userId)
-        {
-            user = await _userRepository.GetByIdAsync(userId, ct);
+            user = await _userRepository.GetByRefreshTokenAsync(incomingRefreshToken, ct);
         }
 
         if (user == null || !user.IsActive)
         {
-            return Result<AuthResponse>.Failure("User account not found or inactive.");
+            return Result<AuthResponse>.Failure("User account not found, deactivated, or invalid session.");
         }
 
         if (string.IsNullOrEmpty(user.RefreshToken) || 
-            !string.Equals(user.RefreshToken, request.RefreshToken, StringComparison.Ordinal) ||
+            !string.Equals(user.RefreshToken, incomingRefreshToken, StringComparison.Ordinal) ||
             user.RefreshTokenExpiryDateTime == null || 
             user.RefreshTokenExpiryDateTime <= DateTime.UtcNow)
         {
@@ -333,7 +338,7 @@ public class AuthService : IAuthService
 
         await _userRepository.UpdateRefreshTokenAsync(user.UserID, newRefreshToken, refreshExpiry, ct);
 
-        var expiresAt = DateTime.UtcNow.AddMinutes(60);
+        var expiresAt = DateTime.UtcNow.AddMinutes(15);
         return Result<AuthResponse>.Success(new AuthResponse(
             UserId: user.UserID,
             FullName: user.Name,

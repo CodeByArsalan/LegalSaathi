@@ -136,6 +136,25 @@ public class UserRepository : IUserRepository
         return rows > 0;
     }
 
+    public async Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken ct = default)
+    {
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT TOP 1 * FROM dbo.Users WHERE RefreshToken = @RefreshToken";
+        command.CommandType = CommandType.Text;
+        command.CommandTimeout = 30;
+
+        command.Parameters.Add(new SqlParameter("@RefreshToken", SqlDbType.NVarChar, 500) { Value = refreshToken });
+
+        await using var reader = await command.ExecuteReaderAsync(CommandBehavior.SingleRow, ct);
+        if (await reader.ReadAsync(ct))
+        {
+            return MapUserFromReader(reader, includeCredentials: true);
+        }
+
+        return null;
+    }
+
     public async Task<bool> VerifyEmailAsync(int userId, CancellationToken ct = default)
     {
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(ct);
