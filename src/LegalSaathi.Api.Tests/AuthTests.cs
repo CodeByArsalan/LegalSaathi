@@ -1,6 +1,8 @@
+using System.IO;
 using System.Security.Claims;
 using LegalSaathi.Api.Domain.Entities;
 using LegalSaathi.Api.Domain.Enums;
+using LegalSaathi.Api.Infrastructure;
 using LegalSaathi.Api.Infrastructure.Services;
 using LegalSaathi.Api.Security;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +16,42 @@ namespace LegalSaathi.Api.Tests;
 
 public class AuthTests
 {
+    [Fact]
+    public void DotEnvLoader_ShouldPopulateConfigurationAndEnvironment()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            var envFilePath = Path.Combine(tempDir, ".env");
+            File.WriteAllLines(envFilePath, new[]
+            {
+                "# Comment line",
+                "ConnectionStrings__DefaultConnection=\"Server=testdb;Database=test;\"",
+                "JWT_SECRET_KEY=\"my-custom-test-secret-key-32-chars-long!\"",
+                "GROQ_API_KEY=\"gsk_test_key_123\"",
+                "EMAIL_USERNAME=\"test@example.com\"",
+                "EMAIL_PASSWORD=\"mypassword123\""
+            });
+
+            var configBuilder = new ConfigurationManager();
+            DotEnvLoader.Load(tempDir, configBuilder);
+
+            Assert.Equal("Server=testdb;Database=test;", configBuilder.GetConnectionString("DefaultConnection"));
+            Assert.Equal("my-custom-test-secret-key-32-chars-long!", configBuilder["JwtSettings:SecretKey"]);
+            Assert.Equal("gsk_test_key_123", configBuilder["AiSettings:ApiKey"]);
+            Assert.Equal("test@example.com", configBuilder["EmailSettings:Username"]);
+            Assert.Equal("mypassword123", configBuilder["EmailSettings:Password"]);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, true);
+            }
+        }
+    }
+
     [Fact]
     public void PasswordHasher_ShouldHashAndVerifyPassword_Successfully()
     {
@@ -42,17 +80,17 @@ public class AuthTests
             Host = "smtp.gmail.com",
             Port = 587,
             EnableSsl = true,
-            Username = "arsalannsd@gmail.com",
-            Password = "rbow xrhe avgq lbmr"
+            Username = "test@example.com",
+            Password = "abcd efgh ijkl mnop"
         };
 
         // Assert
         Assert.Equal("smtp.gmail.com", settings.GetEffectiveHost());
         Assert.Equal(587, settings.GetEffectivePort());
         Assert.True(settings.GetEffectiveEnableSsl());
-        Assert.Equal("arsalannsd@gmail.com", settings.GetEffectiveUsername());
-        Assert.Equal("rbowxrheavgqlbmr", settings.GetEffectivePassword());
-        Assert.Equal("arsalannsd@gmail.com", settings.GetEffectiveSenderEmail());
+        Assert.Equal("test@example.com", settings.GetEffectiveUsername());
+        Assert.Equal("abcdefghijklmnop", settings.GetEffectivePassword());
+        Assert.Equal("test@example.com", settings.GetEffectiveSenderEmail());
     }
 
     [Fact]

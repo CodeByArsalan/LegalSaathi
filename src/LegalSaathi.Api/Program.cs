@@ -8,6 +8,9 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 0. Load .env file if present
+DotEnvLoader.Load(builder.Environment.ContentRootPath, builder.Configuration);
+
 // 1. Configuration & JWT Options
 var jwtSettings = new JwtSettings();
 builder.Configuration.GetSection(JwtSettings.SectionName).Bind(jwtSettings);
