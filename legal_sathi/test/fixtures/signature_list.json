@@ -1,0 +1,35 @@
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Signatures retrieved successfully.",
+  "data": [
+    {
+      "signatureId": 2,
+      "userDocumentId": 4,
+      "signerName": "Gate Check",
+      "signerCnic": "35201-1234567-1",
+      "signerRole": "Deponent",
+      "signerEmail": "lsgate66921159@uberip.com",
+      "signerPhone": null,
+      "signatureUri": "sig_344ec64d-1252-44ec-b52f-1cb069031ef6_88cadd2c13a54d889d50f81052f33cc1.png",
+      "isOtpVerified": true,
+      "ipAddress": "223.123.41.4",
+      "signedAt": "2026-09-07T10:38:56.8466667"
+    },
+    {
+      "signatureId": 3,
+      "userDocumentId": 4,
+      "signerName": "Gate Check",
+      "signerCnic": "35201-1234567-1",
+      "signerRole": "Deponent",
+      "signerEmail": "lsgate66921159@uberip.com",
+      "signerPhone": null,
+      "signatureUri": "sig_344ec64d-1252-44ec-b52f-1cb069031ef6_572357da104a4a56a14f5ae405456ae4.png",
+      "isOtpVerified": true,
+      "ipAddress": "223.123.41.4",
+      "signedAt": "2026-09-07T10:41:19.3133333"
+    }
+  ],
+  "errors": [],
+  "timestamp": "2026-09-07T08:41:19.7625009Z"
+}

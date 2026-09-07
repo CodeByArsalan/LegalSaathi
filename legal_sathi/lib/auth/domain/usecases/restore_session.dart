@@ -1,0 +1,12 @@
+import '../../../core/errors/result.dart';
+import '../entities/auth_session.dart';
+import '../repositories/auth_repository.dart';
+
+class RestoreSessionUseCase {
+  const RestoreSessionUseCase(this._repository);
+
+  final AuthRepository _repository;
+
+  /// `Success(null)` means "no stored session", which is not a failure.
+  Future<Result<AuthSession?>> call() => _repository.restoreSession();
+}

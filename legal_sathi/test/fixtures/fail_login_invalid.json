@@ -1,0 +1,10 @@
+{
+  "success": false,
+  "statusCode": 400,
+  "message": "Operation failed.",
+  "data": null,
+  "errors": [
+    "Invalid email/phone or password."
+  ],
+  "timestamp": "2026-09-07T08:28:19.7990575Z"
+}

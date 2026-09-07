@@ -1,0 +1,10 @@
+{
+  "success": false,
+  "statusCode": 400,
+  "message": "Operation failed.",
+  "data": null,
+  "errors": [
+    "No OTP request found for this destination or OTP has expired."
+  ],
+  "timestamp": "2026-09-07T08:41:20.1216588Z"
+}

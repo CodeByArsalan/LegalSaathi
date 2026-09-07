@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Operation completed successfully.",
+  "data": {
+    "interpolatedContentEn": "LEGAL CONTENT REQUIRES LAWYER VERIFICATION: I, Preview Person, son/daughter of Preview Father, holding CNIC No. 35201-1234567-1, resident of 1 Preview Lane, do hereby solemnly affirm and declare on oath as under: Preview statement.",
+    "interpolatedContentUr": "LEGAL CONTENT REQUIRES LAWYER VERIFICATION: میں، Preview Person، ولد/دختر Preview Father، شناختی کارڈ نمبر 35201-1234567-1، ساکن 1 Preview Lane، بحلف اقرار و بیان کرتا/کرتی ہوں کہ: Preview statement.",
+    "missingRequiredFields": [],
+    "isValid": true,
+    "validationErrors": []
+  },
+  "errors": [],
+  "timestamp": "2026-09-07T08:41:08.0283447Z"
+}
