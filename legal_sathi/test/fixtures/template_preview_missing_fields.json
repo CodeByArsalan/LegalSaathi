@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Operation completed successfully.",
+  "data": {
+    "interpolatedContentEn": "LEGAL CONTENT REQUIRES LAWYER VERIFICATION: I, Only One, son/daughter of [FatherName], holding CNIC No. [Cnic], resident of [Address], do hereby solemnly affirm and declare on oath as under: [AffidavitStatement]",
+    "interpolatedContentUr": "LEGAL CONTENT REQUIRES LAWYER VERIFICATION: میں، Only One، ولد/دختر [FatherName]، شناختی کارڈ نمبر [Cnic]، ساکن [Address]، بحلف اقرار و بیان کرتا/کرتی ہوں کہ: [AffidavitStatement]",
+    "missingRequiredFields": [
+      "FatherName",
+      "Cnic",
+      "Address",
+      "AffidavitStatement"
+    ],
+    "isValid": false,
+    "validationErrors": [
+      "Field 'Father / Husband Name' (والد / شوہر کا نام) is required.",
+      "Field 'CNIC Number' (قومی شناختی کارڈ نمبر) is required.",
+      "Field 'Residential Address' (رہائشی پتہ) is required.",
+      "Field 'Sworn Statement / Facts' (بیان حلفی کی تفصیل / حقائق) is required."
+    ]
+  },
+  "errors": [],
+  "timestamp": "2026-09-07T08:41:08.4484819Z"
+}

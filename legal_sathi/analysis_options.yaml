@@ -1,0 +1,23 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - '**/*.g.dart'
+    - '**/*.freezed.dart'
+  errors:
+    # freezed + @JsonKey on constructor parameters trips this.
+    invalid_annotation_target: ignore
+
+linter:
+  rules:
+    prefer_single_quotes: true
+    always_declare_return_types: true
+    avoid_void_async: true
+    unawaited_futures: true
+    require_trailing_commas: true
+    directives_ordering: true
+    prefer_final_locals: true
+    # Repositories, usecases and Cubits take their collaborators as *named*
+    # arguments (order-independent under get_it). Dart forbids a private named
+    # initializing formal, so this rule is unsatisfiable for the DI style.
+    prefer_initializing_formals: false

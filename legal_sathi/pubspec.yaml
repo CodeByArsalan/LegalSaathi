@@ -1,0 +1,58 @@
+name: legal_sathi
+description: "Legal Sathi — bilingual (Urdu/English) legal document builder for Pakistan."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State management (Cubit only)
+  flutter_bloc: ^9.1.1
+
+  # Navigation
+  go_router: ^18.0.0
+
+  # Dependency injection
+  get_it: ^9.2.1
+
+  # Networking
+  dio: ^5.11.0
+  pretty_dio_logger: ^1.4.0
+
+  # Storage
+  flutter_secure_storage: ^11.0.0
+  shared_preferences: ^2.5.5
+
+  # Localization (English / Urdu)
+  easy_localization: ^3.0.8
+  intl: ^0.20.2
+
+  # Code generation runtime
+  json_annotation: ^4.12.0
+  freezed_annotation: ^3.1.0
+
+  # Sharing generated documents
+  share_plus: ^13.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+  freezed: ^3.2.5
+  json_serializable: ^6.14.1
+  build_runner: ^2.15.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/translations/
+    - assets/mock/

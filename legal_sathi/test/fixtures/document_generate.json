@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Operation completed successfully.",
+  "data": {
+    "userDocumentId": 3,
+    "documentGuid": "6f2cfb93-1a2f-47aa-83fe-2270a8eac69f",
+    "status": "Completed",
+    "storagePath": "documents/6f2cfb93-1a2f-47aa-83fe-2270a8eac69f/6f2cfb93-1a2f-47aa-83fe-2270a8eac69f.pdf",
+    "docxStoragePath": "documents/6f2cfb93-1a2f-47aa-83fe-2270a8eac69f/6f2cfb93-1a2f-47aa-83fe-2270a8eac69f.docx",
+    "documentHash": "31e5ea9bcc56e859b45e19b0e4772fe766e31e4054599262249c2d0ef060eaad",
+    "pdfDownloadUrl": "/api/documents/3/download/pdf",
+    "docxDownloadUrl": "/api/documents/3/download/docx"
+  },
+  "errors": [],
+  "timestamp": "2026-09-07T08:28:13.9332576Z"
+}

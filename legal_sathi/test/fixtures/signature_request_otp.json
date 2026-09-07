@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "OTP code sent.",
+  "data": {
+    "success": true,
+    "message": "Verification code sent successfully.",
+    "destinationMasked": "ls***@uberip.com",
+    "expiresAt": "2026-09-07T08:46:10.7065452Z"
+  },
+  "errors": [],
+  "timestamp": "2026-09-07T08:41:10.7065617Z"
+}

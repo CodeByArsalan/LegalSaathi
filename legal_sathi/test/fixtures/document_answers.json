@@ -1,0 +1,10 @@
+{
+  "success": false,
+  "statusCode": 400,
+  "message": "Operation failed.",
+  "data": null,
+  "errors": [
+    "Failed to update document answers."
+  ],
+  "timestamp": "2026-09-07T08:28:12.5436889Z"
+}

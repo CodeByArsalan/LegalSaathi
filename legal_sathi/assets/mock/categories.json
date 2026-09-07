@@ -1,0 +1,40 @@
+{
+  "data": [
+    {
+      "categoryId": 1,
+      "nameEn": "Personal & Family",
+      "nameUr": "ذاتی اور خاندانی",
+      "descriptionEn": "Affidavits, Power of Attorney, Declarations.",
+      "descriptionUr": "حلف نامے، مختار نامہ، اور ذاتی بیانات۔",
+      "icon": "Users",
+      "templateCount": 1
+    },
+    {
+      "categoryId": 2,
+      "nameEn": "Real Estate & Tenancy",
+      "nameUr": "جائیداد اور کرایہ داری",
+      "descriptionEn": "Residential & Commercial Leases, Sale Bayana, Eviction Notices.",
+      "descriptionUr": "رہائشی و کمرشل کرایہ نامے، بیعانہ اور نوٹسز۔",
+      "icon": "Home",
+      "templateCount": 1
+    },
+    {
+      "categoryId": 3,
+      "nameEn": "Business / Freelance / SME",
+      "nameUr": "کاروبار اور فری لانسنگ",
+      "descriptionEn": "NDAs, Employment, Freelance Agreements, MOUs, Partnership Deeds.",
+      "descriptionUr": "معاہدات ملازمت، این ڈی اے، مفاہمتی یادداشت اور شراکت نامے۔",
+      "icon": "Briefcase",
+      "templateCount": 4
+    },
+    {
+      "categoryId": 4,
+      "nameEn": "Vehicles & Assets",
+      "nameUr": "گاڑیاں اور اثاثہ جات",
+      "descriptionEn": "Vehicle Sale Deeds, Delivery Receipts, Promissory Notes.",
+      "descriptionUr": "گاڑیوں کا بیع نامہ، وصولی رسید، اور اقرار نامے۔",
+      "icon": "Car",
+      "templateCount": 1
+    }
+  ]
+}

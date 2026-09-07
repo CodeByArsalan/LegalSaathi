@@ -1,0 +1,10 @@
+{
+  "success": false,
+  "statusCode": 400,
+  "message": "Operation failed.",
+  "data": null,
+  "errors": [
+    "Invalid or expired refresh token. Please sign in again."
+  ],
+  "timestamp": "2026-09-07T08:41:02.2780006Z"
+}

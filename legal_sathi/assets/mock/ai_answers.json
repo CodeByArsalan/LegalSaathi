@@ -1,0 +1,46 @@
+{
+  "data": [
+    {
+      "id": "ans_rent",
+      "keywords": ["rent", "tenant", "landlord", "lease", "گھر", "کرایہ", "ایجارہ"],
+      "answerEn": "## Rent Agreement\n\nA **Rent Agreement** is the document you need. It names the landlord and the tenant, the property address, the monthly rent, the security deposit and the lease period.\n\nAn agreement of **12 months or more** usually has to be registered with the Sub-Registrar, so keep two stamp papers of the provincial value ready.",
+      "answerUr": "## معاہدہ کرایہ نامہ\n\nگھر یا جگہ کرایے پر دینے کے لیے **معاہدہ کرایہ نامہ** درکار ہوتا ہے۔ اس میں مالک و کرایہ دار کے نام، پتہ، ماہانہ کرایہ، سیکورٹی ڈپازٹ اور مدت درج ہوتی ہے۔\n\n**بارہ مہینے یا اس سے زیادہ** مدت کے معاہدے عموماً سب رجسٹرار کے پاس رجسٹرڈ کروانے پڑتے ہیں، اس لیے صوبائی نرخ پر دو اسٹیمپ پیپر تیار رکھیں۔"
+    },
+    {
+      "id": "ans_poa",
+      "keywords": ["power of attorney", "poa", "attorney", "وکالت نامہ", "وکالت"],
+      "answerEn": "## Power of Attorney\n\nA **Power of Attorney** lets someone act for you. Choose **General** if you want them to handle all your matters, or **Specific** if it is for one job such as a property transfer.\n\nIt must be signed by **two witnesses** and attested by a Notary Public or an Oath Commissioner.",
+      "answerUr": "## وکالت نامہ\n\n**وکالت نامہ** سے آپ کسی کو اپنی طرف سے کارروائی کرنے کا اختیار دیتے ہیں۔ اگر تمام معاملات کے لیے چاہیے تو **عام** اور کسی ایک کام مثلاً فروخت کے لیے چاہیے تو **خاص** منتخب کریں۔\n\nاس پر **دو گواہوں** کے دستخط اور نوٹری پبلک یا قسم کمشنر کی تصدیق لازمی ہے۔"
+    },
+    {
+      "id": "ans_affidavit",
+      "keywords": ["affidavit", "half nama", "حلف نامہ", "قسم"],
+      "answerEn": "## Affidavit\n\nAn **Affidavit** is a written statement that you declare to be true on oath.\n\nPrint it on stamp paper of the value your province requires and get it attested by an **Oath Commissioner**. Keep the facts short, dated and specific — *one affidavit for one matter*.",
+      "answerUr": "## حلف نامہ\n\n**حلف نامہ** تحریری بیان ہے جو آپ قسم کھا کر سچ ثابت کرتے ہیں۔\n\nاسے صوبے کے مقررہ اسٹیمپ پیپر پر پرنٹ کروائیں اور **قسم کمشنر** سے تصدیق کروائیں۔ حقائق مختصر اور تاریخ دار رکھیں — *ایک معاملے کے لیے ایک حلف نامہ*۔"
+    },
+    {
+      "id": "ans_esign_valid",
+      "keywords": ["signature", "digital", "valid", "court", "evidence", "دستخط", "الیکٹرانک"],
+      "answerEn": "## Are electronic signatures valid?\n\nThey are recognised in Pakistan under the **Electronic Transactions Ordinance 2002**, and a document generated here is formatted to be filed as evidence.\n\nFor land and property matters courts still expect attested physical copies, so **print, sign and get it notarised** before filing.",
+      "answerUr": "## الیکٹرانک دستخط کی حیثیت\n\nپاکستان میں الیکٹرانک دستخط **الیکٹرانک ٹرانزیکشنز آرڈیننس 2002** کے تحت مانی جاتی ہیں، اور یہاں تیار شدہ دستاویز ثبوت کے طور پر پیش کرنے کے قابل فارمیٹ میں ہوتی ہے۔\n\nتاہم زمین اور پراپرٹی کے مقدمات میں عدالتیں تصدیق شدہ کاغذی نسخے چاہتی ہیں، اس لیے فائل کرنے سے پہلے **پرنٹ، دستخط اور نوٹری** کروا لیں۔"
+    },
+    {
+      "id": "ans_cost",
+      "keywords": ["cost", "price", "charge", "free", "کتنا", "خرچ", "قیمت"],
+      "answerEn": "## What it costs\n\nEvery template carries its own price in PKR, and it is shown on the card and again on the template before you start. Templates on the **Free** tier — an affidavit, for example — cost nothing.\n\nThe price covers generation: once the document is generated you can **download it as a PDF or a DOCX** and send it on from the share sheet.",
+      "answerUr": "## اخراجات\n\nہر نمونے کی اپنی قیمت روپے میں مقرر ہوتی ہے جو کارڈ پر اور شروع کرنے سے پہلے نمونے کی تفصیل میں دکھائی جاتی ہے۔ **مفت** درجے کے نمونے — مثلاً حلف نامہ — بغیر قیمت کے ہیں۔\n\nیہ قیمت دستاویز تیار کرنے کی ہے: تیار ہونے کے بعد آپ اسے **پی ڈی ایف یا ورڈ فائل** میں ڈاؤن لوڈ اور شیٹ کے ذریعے آگے بھیج سکتے ہیں۔"
+    },
+    {
+      "id": "ans_nda",
+      "keywords": ["nda", "confidential", "razdari", "رازداری", "معاہدہ"],
+      "answerEn": "## Non-Disclosure Agreement\n\nAn **NDA** protects information you share with another party.\n\nName both parties clearly, describe the confidential purpose, set how long the duty lasts, and pick the courts that will have jurisdiction over disputes.",
+      "answerUr": "## معاہدہ رازداری\n\n**معاہدہ رازداری** اس معلومات کی حفاظت کرتا ہے جو آپ دوسرے فریق کو دیتے ہیں۔\n\nدونوں فریقوں کے نام واضح لکھیں، مقصدِ رازداری بیان کریں، مدت طے کریں اور اختلاف کی صورت میں جائز عدالت کا انتخاب کریں۔"
+    },
+    {
+      "id": "fallback",
+      "keywords": [],
+      "answerEn": "I can explain **which document fits your situation**, what a clause means, or what to write in a form field.\n\nTell me the matter in a line — *for example, 'I am giving my shop on rent in Lahore'* — and I will point you to the right template.",
+      "answerUr": "میں بتا سکتا ہوں کہ **آپ کے معاملے کے لیے کون سی دستاویز مناسب ہے**، کوئی شق کیا مطلب رکھتی ہے، یا فارم کے خانے میں کیا لکھنا ہے۔\n\nاپنا معاملہ ایک لائن میں لکھیں — *مثلاً 'لاہور میں دکان کرایے پر دینی ہے'* — میں درست نمونہ بتا دوں گا۔"
+    }
+  ]
+}

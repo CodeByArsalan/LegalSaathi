@@ -1,0 +1,20 @@
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Operation completed successfully.",
+  "data": {
+    "userId": 3,
+    "fullName": "Gate Check",
+    "email": "lsgate66921159@uberip.com",
+    "phoneNumber": "03788768671",
+    "role": "EndUser",
+    "roleId": 2,
+    "cnic": null,
+    "isEmailVerified": true,
+    "isActive": true,
+    "createdDateTime": "2026-09-07T08:11:13.6920539",
+    "updatedDateTime": "2026-09-07T08:41:06.7206207"
+  },
+  "errors": [],
+  "timestamp": "2026-09-07T08:41:07.1350934Z"
+}

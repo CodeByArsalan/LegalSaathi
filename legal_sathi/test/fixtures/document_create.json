@@ -1,0 +1,26 @@
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Draft document created successfully.",
+  "data": {
+    "userDocumentId": 3,
+    "documentGuid": "6f2cfb93-1a2f-47aa-83fe-2270a8eac69f",
+    "userId": 3,
+    "templateId": 1,
+    "templateTitleEn": "General Affidavit (Bayan-e-Halfi)",
+    "templateTitleUr": "عمومی بیان حلفی",
+    "title": "Fixture Affidavit",
+    "formAnswersJson": "{\"DeponentName\":\"Gate Check\",\"FatherName\":\"Fixture Father\",\"Cnic\":\"35201-1234567-1\",\"Address\":\"12 Test Street, Lahore\",\"AffidavitStatement\":\"This is a captured fixture statement.\"}",
+    "status": "Draft",
+    "statusId": 1,
+    "storagePath": null,
+    "docxStoragePath": null,
+    "documentHash": null,
+    "isPaid": false,
+    "createdAt": "2026-09-07T10:28:11.0533333",
+    "updatedAt": null,
+    "completedAt": null
+  },
+  "errors": [],
+  "timestamp": "2026-09-07T08:28:11.0809739Z"
+}

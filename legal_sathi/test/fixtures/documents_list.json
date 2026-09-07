@@ -1,0 +1,35 @@
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Operation completed successfully.",
+  "data": [
+    {
+      "userDocumentId": 4,
+      "documentGuid": "344ec64d-1252-44ec-b52f-1cb069031ef6",
+      "templateId": 1,
+      "templateTitleEn": "General Affidavit (Bayan-e-Halfi)",
+      "templateTitleUr": "عمومی بیان حلفی",
+      "title": "Answers Probe",
+      "status": "Signed",
+      "statusId": 4,
+      "isPaid": false,
+      "createdAt": "2026-09-07T10:32:54.8033333",
+      "completedAt": "2026-09-07T08:41:19.3317377"
+    },
+    {
+      "userDocumentId": 3,
+      "documentGuid": "6f2cfb93-1a2f-47aa-83fe-2270a8eac69f",
+      "templateId": 1,
+      "templateTitleEn": "General Affidavit (Bayan-e-Halfi)",
+      "templateTitleUr": "عمومی بیان حلفی",
+      "title": "Fixture Affidavit",
+      "status": "Completed",
+      "statusId": 2,
+      "isPaid": false,
+      "createdAt": "2026-09-07T10:28:11.0533333",
+      "completedAt": "2026-09-07T08:28:13.9264115"
+    }
+  ],
+  "errors": [],
+  "timestamp": "2026-09-07T08:41:20.5618572Z"
+}

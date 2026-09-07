@@ -1,0 +1,26 @@
+{
+  "data": [
+    {
+      "id": 1001,
+      "email": "demo@legalsathi.pk",
+      "password": "demo1234",
+      "fullName": "Ayesha Khan",
+      "phoneNumber": "03001234567",
+      "cnic": "42101-1234567-1",
+      "emailVerified": true,
+      "role": "EndUser",
+      "createdAt": "2026-01-12T09:30:00"
+    },
+    {
+      "id": 1002,
+      "email": "pending@legalsathi.pk",
+      "password": "demo1234",
+      "fullName": "Bilal Ahmed",
+      "phoneNumber": "03011234567",
+      "cnic": null,
+      "emailVerified": false,
+      "role": "EndUser",
+      "createdAt": "2026-02-03T14:05:00"
+    }
+  ]
+}

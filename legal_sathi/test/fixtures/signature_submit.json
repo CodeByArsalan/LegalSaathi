@@ -1,0 +1,20 @@
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Document digitally signed successfully under Pakistan ETO 2002.",
+  "data": {
+    "signatureId": 3,
+    "userDocumentId": 4,
+    "signerName": "Gate Check",
+    "signerCnic": "35201-1234567-1",
+    "signerRole": "Deponent",
+    "signerEmail": "lsgate66921159@uberip.com",
+    "signerPhone": null,
+    "signatureUri": "sig_344ec64d-1252-44ec-b52f-1cb069031ef6_572357da104a4a56a14f5ae405456ae4.png",
+    "isOtpVerified": true,
+    "ipAddress": "223.123.41.4",
+    "signedAt": "2026-09-07T08:41:19.3252197Z"
+  },
+  "errors": [],
+  "timestamp": "2026-09-07T08:41:19.3356348Z"
+}
