@@ -48,10 +48,11 @@ appsettings.*.local.json
 *.pem
 secrets.json
 
-# Operating System
+# Operating System & Office Temp
 .DS_Store
 Thumbs.db
 Desktop.ini
+~$*
 
 # Logs
 logs/

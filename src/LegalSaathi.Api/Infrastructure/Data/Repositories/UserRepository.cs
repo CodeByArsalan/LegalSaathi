@@ -174,15 +174,15 @@ public class UserRepository : IUserRepository
         var user = new User
         {
             UserID = reader.GetInt32(reader.GetOrdinal("UserID")),
-            Name = reader.GetString(reader.GetOrdinal("Name")),
-            Email = reader.GetString(reader.GetOrdinal("Email")),
-            Phone = reader.GetString(reader.GetOrdinal("Phone")),
+            Name = reader.IsDBNull(reader.GetOrdinal("Name")) ? "" : reader.GetString(reader.GetOrdinal("Name")),
+            Email = reader.IsDBNull(reader.GetOrdinal("Email")) ? "" : reader.GetString(reader.GetOrdinal("Email")),
+            Phone = reader.IsDBNull(reader.GetOrdinal("Phone")) ? "" : reader.GetString(reader.GetOrdinal("Phone")),
             Role_ID = reader.IsDBNull(reader.GetOrdinal("Role_ID")) ? 2 : reader.GetInt32(reader.GetOrdinal("Role_ID")),
             Role = reader.IsDBNull(reader.GetOrdinal("Role_ID")) ? UserRole.EndUser : (UserRole)reader.GetInt32(reader.GetOrdinal("Role_ID")),
             Cnic = reader.IsDBNull(reader.GetOrdinal("Cnic")) ? null : reader.GetString(reader.GetOrdinal("Cnic")),
-            IsEmailVerified = reader.GetBoolean(reader.GetOrdinal("IsEmailVerified")),
-            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
-            CreatedDateTime = reader.GetDateTime(reader.GetOrdinal("CreatedDateTime"))
+            IsEmailVerified = !reader.IsDBNull(reader.GetOrdinal("IsEmailVerified")) && reader.GetBoolean(reader.GetOrdinal("IsEmailVerified")),
+            IsActive = reader.IsDBNull(reader.GetOrdinal("IsActive")) || reader.GetBoolean(reader.GetOrdinal("IsActive")),
+            CreatedDateTime = reader.IsDBNull(reader.GetOrdinal("CreatedDateTime")) ? DateTime.UtcNow : reader.GetDateTime(reader.GetOrdinal("CreatedDateTime"))
         };
 
         if (HasColumn(reader, "UpdatedDateTime") && !reader.IsDBNull(reader.GetOrdinal("UpdatedDateTime")))

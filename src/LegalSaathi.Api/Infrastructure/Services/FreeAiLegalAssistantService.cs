@@ -56,14 +56,15 @@ public class FreeAiLegalAssistantService : IAiLegalAssistantService
 
         // Auto-detect provider if URL is not explicitly configured
         if (!string.IsNullOrWhiteSpace(externalApiKey) && 
-            !externalApiKey.Contains("placeholder", StringComparison.OrdinalIgnoreCase))
+            !externalApiKey.Contains("placeholder", StringComparison.OrdinalIgnoreCase) &&
+            !externalApiKey.Contains("your_groq_api_key", StringComparison.OrdinalIgnoreCase))
         {
             if (string.IsNullOrWhiteSpace(externalApiUrl))
             {
                 if (externalApiKey.StartsWith("gsk_", StringComparison.OrdinalIgnoreCase))
                 {
                     externalApiUrl = "https://api.groq.com/openai/v1/chat/completions";
-                    configuredModel = string.IsNullOrWhiteSpace(configuredModel) ? "llama-3.3-70b-versatile" : configuredModel;
+                    configuredModel = string.IsNullOrWhiteSpace(configuredModel) ? "openai/gpt-oss-120b" : configuredModel;
                 }
                 else if (externalApiKey.StartsWith("sk-or-", StringComparison.OrdinalIgnoreCase))
                 {
