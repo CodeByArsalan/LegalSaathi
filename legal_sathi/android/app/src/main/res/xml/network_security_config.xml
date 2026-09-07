@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The hosted API is HTTP-only: https://legalsaathi.runasp.net does not terminate
+  TLS at all. Cleartext is therefore permitted for that one host rather than
+  blanket-enabling android:usesCleartextTraffic, so every other destination
+  still requires HTTPS.
+
+  10.0.2.2 and localhost are the Android emulator's view of the developer's own
+  machine, for runs against a locally hosted API via -dart-define=BASE_URL.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">legalsaathi.runasp.net</domain>
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

@@ -1,0 +1,10 @@
+{
+  "success": false,
+  "statusCode": 400,
+  "message": "Operation failed.",
+  "data": null,
+  "errors": [
+    "Template with slug 'this-slug-does-not-exist' not found."
+  ],
+  "timestamp": "2026-09-07T08:28:21.5018139Z"
+}

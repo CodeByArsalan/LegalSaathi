@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "AI response generated successfully.",
+  "data": {
+    "answer": "An affidavit in Pakistan is a written statement of facts voluntarily sworn or affirmed before a magistrate, notary public, or other authorized officer, and signed by the deponent, who declares the contents to be true to the best of their knowledge. Under the Qanun‑e‑Shahadat Order 1984, an affidavit is admissible as evidence in court unless it is proven to be false or improperly executed.",
+    "totalTokens": 111,
+    "model": "openai/gpt-oss-120b",
+    "queryId": 5
+  },
+  "errors": [],
+  "timestamp": "2026-09-07T08:28:16.8339563Z"
+}

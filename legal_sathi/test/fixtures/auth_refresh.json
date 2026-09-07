@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Operation completed successfully.",
+  "data": {
+    "userId": 3,
+    "fullName": "Gate Check",
+    "email": "lsgate66921159@uberip.com",
+    "phoneNumber": "03788768671",
+    "role": "EndUser",
+    "cnic": null,
+    "accessToken": "REDACTED_TEST_TOKEN",
+    "refreshToken": "REDACTED_TEST_TOKEN",
+    "expiresAt": "2026-09-07T08:56:01.8407755Z"
+  },
+  "errors": [],
+  "timestamp": "2026-09-07T08:41:01.8408507Z"
+}

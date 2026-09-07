@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Operation completed successfully.",
+  "data": {
+    "userId": 4,
+    "fullName": "Fixture User",
+    "email": "fixture424915693@uberip.com",
+    "phoneNumber": "03788770462",
+    "role": "EndUser",
+    "requiresEmailVerification": true,
+    "message": "Registration successful! A 6-digit verification code has been sent to fixture424915693@uberip.com."
+  },
+  "errors": [],
+  "timestamp": "2026-09-07T08:41:04.2412828Z"
+}

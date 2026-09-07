@@ -1,0 +1,11 @@
+{
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": {
+    "EmailOrPhone": [
+      "The EmailOrPhone field is required."
+    ]
+  },
+  "traceId": "00-3a6bc9bf4aa31dfd5d306f841b431f19-5a150313f18c55ee-00"
+}

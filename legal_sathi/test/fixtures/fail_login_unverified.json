@@ -1,0 +1,10 @@
+{
+  "success": false,
+  "statusCode": 400,
+  "message": "EmailNotVerified",
+  "data": null,
+  "errors": [
+    "Your email address (fixture424915693@uberip.com) has not been verified yet. A 6-digit verification OTP has been sent to your email. Please verify your email before logging in."
+  ],
+  "timestamp": "2026-09-07T08:41:06.1283291Z"
+}

@@ -1,0 +1,49 @@
+{
+  "data": [
+    {
+      "id": "rent-rights",
+      "titleEng": "Rent Agreement Rights",
+      "titleUrdu": "کرایہ داری کے حقوق اور قوانین",
+      "promptEng": "What are tenant and landlord rights under Pakistani tenancy acts? Explain deposit, notice period, and eviction rules.",
+      "promptUrdu": "پاکستانی کرایہ داری قانون کے تحت مالک مکان اور کرایہ دار کے بنیادی حقوق اور بے دخلی کے قواعد کیا ہیں؟",
+      "category": "Tenancy",
+      "icon": "Home"
+    },
+    {
+      "id": "affidavit-validity",
+      "titleEng": "Affidavit Legal Attestation",
+      "titleUrdu": "بیان حلفی کی تصدیق اور شرائط",
+      "promptEng": "What makes an affidavit legally valid in Pakistani courts? What are Oath Commissioner and Stamp Paper requirements?",
+      "promptUrdu": "عدالت میں بیان حلفی کی قانونی حیثیت کے لیے کن شرائط اور اسٹامپ پیپر کا ہونا ضروری ہے؟",
+      "category": "Affidavit",
+      "icon": "FileText"
+    },
+    {
+      "id": "digital-signatures",
+      "titleEng": "Digital Signatures in Court",
+      "titleUrdu": "ڈیجیٹل دستخط کی قانونی حیثیت",
+      "promptEng": "Are digital and OTP signatures legally binding in Pakistani courts under Electronic Transactions Ordinance 2002?",
+      "promptUrdu": "کیا الیکٹرانک ٹرانزیکشن آرڈیننس 2002 کے تحت ڈیجیٹل اور او ٹی پی دستخط عدالت میں قابل قبول ہیں؟",
+      "category": "DigitalSignature",
+      "icon": "CheckCircle"
+    },
+    {
+      "id": "nda-clauses",
+      "titleEng": "NDA & Confidentiality Terms",
+      "titleUrdu": "رازداری کا معاہدہ (این ڈی اے)",
+      "promptEng": "What essential clauses must be included in a Pakistani Non-Disclosure Agreement (NDA) under the Contract Act 1872?",
+      "promptUrdu": "کاروباری راز کے تحفظ کے لیے این ڈی اے (NDA) میں کون سی قانونی شقیں شامل ہونی چاہئیں؟",
+      "category": "Contracts",
+      "icon": "Shield"
+    },
+    {
+      "id": "witness-rules",
+      "titleEng": "Witness Rules (QSO 1984)",
+      "titleUrdu": "گواہان کے قانونی تقاضے",
+      "promptEng": "What are the legal witness requirements for contracts and property sales under Article 79 of Qanun-e-Shahadat 1984?",
+      "promptUrdu": "قانون شہادت 1984 کے تحت معاہدات اور دستاویزات پر کتنے گواہوں کے دستخط لازمی ہیں؟",
+      "category": "Evidence",
+      "icon": "Users"
+    }
+  ]
+}
